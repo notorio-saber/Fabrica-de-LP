@@ -1,0 +1,444 @@
+.julia-landing-template {
+  font-family: 'Poppins', sans-serif;
+  color: var(--landing-text);
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.julia-landing-template * {
+  box-sizing: border-box;
+}
+
+/* ---------- Section 1: hero card ---------- */
+
+.julia-section--hero {
+  background-color: var(--landing-background);
+  padding: 24px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.julia-card--hero {
+  width: 100%;
+  max-width: 620px;
+  background-color: var(--landing-surface);
+  border: 4px solid var(--landing-border);
+  border-radius: 16px;
+  padding: 21px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  order: 0;
+}
+
+.julia-hero-headline {
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 43px;
+  color: var(--landing-primary);
+  margin: 0;
+  order: 1;
+}
+
+.julia-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  order: 2;
+}
+
+.julia-profile-photo {
+  width: 21%;
+  min-width: 140px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 1px solid var(--landing-surface-alt, #f5efea);
+  border-radius: 100px;
+}
+
+.julia-profile-greeting {
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--landing-text);
+  margin: 0;
+}
+
+.julia-marquee {
+  width: 100%;
+  overflow: hidden;
+  background: var(--landing-primary);
+  border: 1px solid #e0d6cf;
+  border-radius: 10px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  order: 3;
+}
+
+.julia-marquee-track {
+  display: flex;
+  gap: 60px;
+  white-space: nowrap;
+  animation: julia-marquee-scroll 40s linear infinite;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  padding-left: 16px;
+}
+
+.julia-marquee-item span {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+@keyframes julia-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- Section 2: offer card ---------- */
+
+.julia-section--offer {
+  background-color: var(--landing-background);
+  padding: 24px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.julia-section-inner {
+  width: 100%;
+  max-width: 680px;
+}
+
+.julia-card--offer {
+  width: 100%;
+  background-color: var(--landing-surface);
+  border: 4px solid var(--landing-border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.julia-offer-subheadline {
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 40px;
+  color: var(--landing-primary);
+  margin: 0;
+}
+
+.julia-offer-categories {
+  width: 100%;
+  background-color: #ffffff;
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--landing-text);
+  margin: 0;
+}
+
+/* ---------- WhatsApp button ---------- */
+
+.julia-whatsapp-button-container {
+  text-align: center;
+  margin-top: 2px;
+}
+
+.julia-whatsapp-button {
+  background-color: #25d366;
+  color: #ffffff !important;
+  font-size: 20px;
+  font-family: Arial, sans-serif;
+  padding: 20px 40px;
+  border-radius: 50px;
+  text-decoration: none !important;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  animation: julia-whatsapp-pulse 2.5s infinite;
+}
+
+.julia-whatsapp-button:hover {
+  transform: scale(1.05);
+}
+
+.julia-whatsapp-button-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+@keyframes julia-whatsapp-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ---------- Marketplace logos ---------- */
+
+.julia-marketplace-logos {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  padding: 2px 10px;
+  flex-wrap: wrap;
+}
+
+.julia-marketplace-logo-item {
+  width: 90px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.julia-marketplace-logo-item img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0.85;
+  transition: all 0.3s ease;
+}
+
+.julia-marketplace-logo-item img:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+/* ---------- Benefits ---------- */
+
+.julia-benefits {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.julia-benefit-card {
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 14px;
+  padding: 16px 14px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.julia-benefit-icon {
+  font-size: 20px;
+}
+
+.julia-benefit-title {
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.julia-benefit-subtitle {
+  font-size: 13px;
+  color: var(--landing-muted-text);
+}
+
+/* ---------- Brands carousel ---------- */
+
+.julia-brands-carousel {
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+  padding: 4px 0;
+  position: relative;
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+.julia-brands-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: julia-brands-scroll 10s linear infinite;
+}
+
+.julia-brands-track img {
+  height: 80px;
+  width: auto;
+  max-width: none;
+  margin: 0 30px;
+  opacity: 0.7;
+  transition: all 0.4s ease;
+}
+
+.julia-brands-track img.active {
+  transform: scale(1.3);
+  opacity: 1;
+}
+
+@keyframes julia-brands-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- Section 3: footer ---------- */
+
+.julia-section--footer {
+  padding: 20px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.julia-footer-text {
+  text-align: center;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: #000000;
+  margin: 0;
+}
+
+/* ---------- Join popup toast ---------- */
+
+.julia-join-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #5d1e69;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  align-items: center;
+  gap: 8px;
+  animation: julia-popup-slide-in 1s ease;
+  z-index: 9999;
+}
+
+.julia-join-popup img {
+  width: 20px;
+  height: 20px;
+}
+
+@keyframes julia-popup-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Mobile (matches original @media max-width:767px) ---------- */
+
+@media (max-width: 767px) {
+  .julia-card--hero {
+    border-width: 4px;
+    padding: 10px;
+    gap: 14px;
+  }
+
+  .julia-hero-headline {
+    font-size: 19px;
+    line-height: 1.3em;
+    order: 1;
+  }
+
+  .julia-profile {
+    order: 2;
+  }
+
+  .julia-profile-photo {
+    width: 42%;
+    min-width: 0;
+    border-width: 2px;
+    border-radius: 90px;
+  }
+
+  .julia-profile-greeting {
+    font-size: 17px;
+  }
+
+  .julia-marquee {
+    order: 0;
+  }
+
+  .julia-card--offer {
+    border-width: 4px;
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  .julia-offer-subheadline {
+    font-size: 17px;
+    line-height: 1.4em;
+  }
+
+  .julia-offer-categories {
+    font-size: 13px;
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .julia-marketplace-logos {
+    gap: 16px;
+    flex-wrap: nowrap;
+  }
+
+  .julia-marketplace-logo-item {
+    flex: 1 1 85px;
+    min-width: 0;
+    max-width: 85px;
+    height: 60px;
+  }
+
+  .julia-brands-track img {
+    height: 80px;
+    margin: 0 30px;
+  }
+
+  .julia-footer-text {
+    font-size: 12px;
+    line-height: 1.4em;
+  }
+}
+
+@media (max-width: 400px) {
+  .julia-whatsapp-button {
+    font-size: 17px;
+    padding: 16px 28px;
+    gap: 10px;
+  }
+}
