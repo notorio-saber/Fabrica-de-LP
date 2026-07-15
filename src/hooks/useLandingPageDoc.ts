@@ -14,9 +14,12 @@ interface Options {
   requireActive?: boolean;
 }
 
+const MAX_RETRIES = 3;
+
 export function useLandingPageDoc(slug: string | null, options: Options = {}): LandingPageDocState {
   const { requireActive = false } = options;
   const [state, setState] = useState<LandingPageDocState>({ status: 'loading' });
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!slug) {
@@ -41,12 +44,19 @@ export function useLandingPageDoc(slug: string | null, options: Options = {}): L
         setState({ status: 'ready', data: { ...data, slug: snapshot.id } });
       },
       (error) => {
-        setState({ status: 'error', message: error.message });
+        // A listener that starts right after a Firestore write can see a
+        // stale permission evaluation once and error out permanently — retry
+        // a few times before surfacing it as a real error.
+        if (retryCount < MAX_RETRIES) {
+          setTimeout(() => setRetryCount((c) => c + 1), 1000);
+        } else {
+          setState({ status: 'error', message: error.message });
+        }
       }
     );
 
     return unsubscribe;
-  }, [slug, requireActive]);
+  }, [slug, requireActive, retryCount]);
 
   return state;
 }

@@ -5,16 +5,36 @@ import { db } from '../../firebase/config';
 import type { LandingPageRecord } from '../../types/landingPage';
 import { brand, ui } from '../../styles/adminUi';
 
+const MAX_RETRIES = 3;
+
 export function AffiliateListPage() {
   const [affiliates, setAffiliates] = useState<LandingPageRecord[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    return onSnapshot(collection(db, 'landingPages'), (snapshot) => {
-      setAffiliates(
-        snapshot.docs.map((d) => ({ ...(d.data() as Omit<LandingPageRecord, 'slug'>), slug: d.id }))
-      );
-    });
-  }, []);
+    setLoadError(null);
+    const unsubscribe = onSnapshot(
+      collection(db, 'landingPages'),
+      (snapshot) => {
+        setAffiliates(
+          snapshot.docs.map((d) => ({ ...(d.data() as Omit<LandingPageRecord, 'slug'>), slug: d.id }))
+        );
+      },
+      (error) => {
+        // A listener that starts right after a Firestore write (e.g. right
+        // after the admin account is created) can see a stale permission
+        // evaluation once and error out — it never retries on its own, so
+        // without this the list is stuck on "Carregando..." forever.
+        if (retryCount < MAX_RETRIES) {
+          setTimeout(() => setRetryCount((c) => c + 1), 1000);
+        } else {
+          setLoadError(error.message);
+        }
+      }
+    );
+    return unsubscribe;
+  }, [retryCount]);
 
   return (
     <div style={ui.content}>
@@ -28,7 +48,23 @@ export function AffiliateListPage() {
         </Link>
       </div>
 
-      {!affiliates && <p style={{ color: brand.mutedText, fontSize: 14 }}>Carregando...</p>}
+      {!affiliates && !loadError && <p style={{ color: brand.mutedText, fontSize: 14 }}>Carregando...</p>}
+
+      {loadError && (
+        <div style={{ ...ui.card, padding: 20 }}>
+          <p style={ui.error}>Não foi possível carregar as afiliadas: {loadError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoadError(null);
+              setRetryCount(0);
+            }}
+            style={{ ...ui.buttonSecondary, marginTop: 12 }}
+          >
+            Tentar de novo
+          </button>
+        </div>
+      )}
 
       {affiliates && affiliates.length === 0 && (
         <div style={{ ...ui.card, ...ui.emptyState }}>
