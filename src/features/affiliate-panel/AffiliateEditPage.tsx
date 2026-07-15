@@ -6,6 +6,7 @@ import { useLandingPageDoc } from '../../hooks/useLandingPageDoc';
 import { landingThemes, defaultLandingTheme } from '../landing-page/themes/landingThemes';
 import { LivePreviewPane } from './LivePreviewPane';
 import { uploadProfilePhoto } from './uploadProfilePhoto';
+import { brand, ui } from '../../styles/adminUi';
 
 interface DraftState {
   affiliateName: string;
@@ -35,8 +36,8 @@ export function AffiliateEditPage() {
   }, [state, draft]);
 
   if (state.status === 'loading' || !draft) return null;
-  if (state.status === 'not-found') return <p>Sua página ainda não foi cadastrada. Fale com o administrador.</p>;
-  if (state.status === 'error') return <p>Erro ao carregar seus dados: {state.message}</p>;
+  if (state.status === 'not-found') return <div style={ui.content}><p style={ui.error}>Sua página ainda não foi cadastrada. Fale com o administrador.</p></div>;
+  if (state.status === 'error') return <div style={ui.content}><p style={ui.error}>Erro ao carregar seus dados: {state.message}</p></div>;
 
   const { permissions } = state.data;
   const theme = landingThemes.find((t) => t.id === draft.themeId) ?? defaultLandingTheme;
@@ -72,108 +73,105 @@ export function AffiliateEditPage() {
   };
 
   return (
-    <div style={{ display: 'flex', gap: 32, padding: 32, fontFamily: 'system-ui, sans-serif', flexWrap: 'wrap' }}>
-      <form
-        style={{ display: 'flex', flexDirection: 'column', gap: 16, width: 340 }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSave();
-        }}
-      >
-        <h1 style={{ fontSize: 20, color: '#5D1E69', margin: 0 }}>Editar minha página</h1>
+    <div style={{ ...ui.content, maxWidth: 1100 }}>
+      <h1 style={ui.pageTitle}>Editar minha página</h1>
+      <p style={ui.pageSubtitle}>As alterações aparecem na pré-visualização ao lado assim que você salva.</p>
 
-        {permissions.allowProfileImageEdit && (
-          <label style={fieldStyle}>
-            Foto de perfil
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              disabled={uploadingPhoto}
-              onChange={(e) => handlePhotoChange(e.target.files?.[0])}
-            />
-            {uploadingPhoto && <span style={{ fontSize: 12, color: '#666' }}>Enviando...</span>}
-            {photoError && <span style={{ fontSize: 12, color: '#c0392b' }}>{photoError}</span>}
-          </label>
-        )}
-
-        {permissions.allowAffiliateNameEdit && (
-          <label style={fieldStyle}>
-            Nome de exibição
-            <input
-              style={inputStyle}
-              value={draft.affiliateName}
-              onChange={(e) => setDraft({ ...draft, affiliateName: e.target.value })}
-            />
-          </label>
-        )}
-
-        {permissions.allowWhatsAppUrlEdit && (
-          <label style={fieldStyle}>
-            Link do grupo do WhatsApp
-            <input
-              style={inputStyle}
-              value={draft.whatsappUrl}
-              onChange={(e) => setDraft({ ...draft, whatsappUrl: e.target.value })}
-            />
-          </label>
-        )}
-
-        {permissions.allowPixelEdit && (
-          <label style={fieldStyle}>
-            ID do Pixel da Meta
-            <input
-              style={inputStyle}
-              value={draft.pixelId}
-              onChange={(e) => setDraft({ ...draft, pixelId: e.target.value })}
-            />
-          </label>
-        )}
-
-        {permissions.allowThemeEdit && (
-          <label style={fieldStyle}>
-            Paleta de cores
-            <select
-              style={inputStyle}
-              value={draft.themeId}
-              onChange={(e) => setDraft({ ...draft, themeId: e.target.value })}
-            >
-              {landingThemes.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        <button
-          type="submit"
-          disabled={saving}
-          style={{
-            marginTop: 8,
-            padding: '12px 14px',
-            borderRadius: 8,
-            border: 'none',
-            background: '#5D1E69',
-            color: '#fff',
-            fontWeight: 600,
-            cursor: 'pointer',
+      <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', marginTop: 20 }}>
+        <form
+          style={{ ...ui.card, display: 'flex', flexDirection: 'column', gap: 16, padding: 24, width: 340 }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
           }}
         >
-          {saving ? 'Salvando...' : 'Salvar'}
-        </button>
-        {savedAt && <p style={{ color: '#2e7d32', fontSize: 13, margin: 0 }}>Salvo!</p>}
-      </form>
+          {permissions.allowProfileImageEdit && (
+            <label style={ui.label}>
+              Foto de perfil
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={uploadingPhoto}
+                onChange={(e) => handlePhotoChange(e.target.files?.[0])}
+              />
+              {uploadingPhoto && <span style={{ fontSize: 12, color: brand.mutedText }}>Enviando...</span>}
+              {photoError && <span style={ui.error}>{photoError}</span>}
+            </label>
+          )}
 
-      <LivePreviewPane
-        affiliateName={draft.affiliateName}
-        profileImageUrl={state.data.profileImageUrl ?? undefined}
-        whatsappUrl={draft.whatsappUrl}
-        theme={theme}
-      />
+          {permissions.allowAffiliateNameEdit && (
+            <label style={ui.label}>
+              Nome de exibição
+              <input
+                style={ui.input}
+                value={draft.affiliateName}
+                onChange={(e) => setDraft({ ...draft, affiliateName: e.target.value })}
+              />
+            </label>
+          )}
+
+          {permissions.allowWhatsAppUrlEdit && (
+            <label style={ui.label}>
+              Link do grupo do WhatsApp
+              <input
+                style={ui.input}
+                value={draft.whatsappUrl}
+                onChange={(e) => setDraft({ ...draft, whatsappUrl: e.target.value })}
+              />
+            </label>
+          )}
+
+          {permissions.allowPixelEdit && (
+            <label style={ui.label}>
+              ID do Pixel da Meta
+              <input
+                style={ui.input}
+                value={draft.pixelId}
+                onChange={(e) => setDraft({ ...draft, pixelId: e.target.value })}
+              />
+            </label>
+          )}
+
+          {permissions.allowThemeEdit && (
+            <label style={ui.label}>
+              Paleta de cores
+              <select
+                style={ui.input}
+                value={draft.themeId}
+                onChange={(e) => setDraft({ ...draft, themeId: e.target.value })}
+              >
+                {landingThemes.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {!permissions.allowProfileImageEdit &&
+            !permissions.allowAffiliateNameEdit &&
+            !permissions.allowWhatsAppUrlEdit &&
+            !permissions.allowPixelEdit &&
+            !permissions.allowThemeEdit && (
+              <p style={{ fontSize: 13, color: brand.mutedText, margin: 0 }}>
+                O administrador ainda não liberou nenhum campo pra você editar.
+              </p>
+            )}
+
+          <button type="submit" disabled={saving} style={ui.buttonPrimary}>
+            {saving ? 'Salvando...' : 'Salvar'}
+          </button>
+          {savedAt && <p style={ui.success}>Salvo!</p>}
+        </form>
+
+        <LivePreviewPane
+          affiliateName={draft.affiliateName}
+          profileImageUrl={state.data.profileImageUrl ?? undefined}
+          whatsappUrl={draft.whatsappUrl}
+          theme={theme}
+        />
+      </div>
     </div>
   );
 }
-
-const fieldStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: '#444' };
-const inputStyle: React.CSSProperties = { padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14 };

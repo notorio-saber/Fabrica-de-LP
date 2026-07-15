@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../../auth/LoginForm';
 import { bootstrapAdmin } from './services/bootstrapAdmin';
+import { brand, ui } from '../../styles/adminUi';
 
 export function AdminLoginPage() {
   const [showBootstrap, setShowBootstrap] = useState(false);
@@ -30,27 +31,39 @@ export function AdminLoginPage() {
   };
 
   const footer = (
-    <div style={{ textAlign: 'center', marginTop: 16, width: '100%', maxWidth: 340 }}>
-      <button
-        type="button"
-        onClick={() => setShowBootstrap((v) => !v)}
-        style={{ background: 'none', border: 'none', color: '#5D1E69', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
-      >
-        Primeiro acesso? Criar administrador
+    <div style={{ textAlign: 'center', marginTop: 20, width: '100%', maxWidth: 360 }}>
+      <button type="button" onClick={() => setShowBootstrap((v) => !v)} style={ui.linkButton}>
+        Ainda não existe administrador? Criar o primeiro acesso
       </button>
 
       {showBootstrap && (
         <form
           onSubmit={handleBootstrap}
-          style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', margin: '16px auto 0', background: '#ffffff', padding: 24, borderRadius: 16, boxShadow: '0 6px 20px rgba(0,0,0,0.08)' }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            width: '100%',
+            margin: '16px auto 0',
+            textAlign: 'left',
+            background: brand.surface,
+            padding: 24,
+            borderRadius: 16,
+            border: `1px solid ${brand.border}`,
+            boxShadow: '0 6px 20px rgba(93, 30, 105, 0.08)',
+          }}
         >
+          <p style={{ margin: 0, fontSize: 13, color: brand.mutedText, lineHeight: 1.5 }}>
+            Isso cria a conta do primeiro administrador da fábrica. Só funciona uma vez — depois disso, novos
+            acessos são criados por aqui mesmo, dentro do painel.
+          </p>
           <input
             type="email"
             placeholder="E-mail do administrador"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ padding: '12px 14px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }}
+            style={ui.input}
           />
           <input
             type="password"
@@ -59,14 +72,10 @@ export function AdminLoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             minLength={6}
             required
-            style={{ padding: '12px 14px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }}
+            style={ui.input}
           />
-          {error && <p style={{ color: '#c0392b', fontSize: 13, margin: 0 }}>{error}</p>}
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{ marginTop: 8, padding: '12px 14px', borderRadius: 8, border: 'none', background: '#5D1E69', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
-          >
+          {error && <p style={ui.error}>{error}</p>}
+          <button type="submit" disabled={submitting} style={ui.buttonPrimary}>
             {submitting ? 'Criando...' : 'Criar administrador'}
           </button>
         </form>
@@ -74,5 +83,12 @@ export function AdminLoginPage() {
     </div>
   );
 
-  return <LoginForm title="Painel administrativo" redirectTo="/admin" footer={footer} />;
+  return (
+    <LoginForm
+      title="Painel administrativo"
+      subtitle="Gerencie as afiliadas e as páginas geradas pela fábrica."
+      redirectTo="/admin"
+      footer={footer}
+    />
+  );
 }

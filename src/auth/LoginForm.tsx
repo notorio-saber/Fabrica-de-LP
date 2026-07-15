@@ -2,14 +2,17 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase/config';
+import { BrandMark } from '../components/BrandMark';
+import { brand, ui } from '../styles/adminUi';
 
 interface LoginFormProps {
   title: string;
+  subtitle: string;
   redirectTo: string;
   footer?: ReactNode;
 }
 
-export function LoginForm({ title, redirectTo, footer }: LoginFormProps) {
+export function LoginForm({ title, subtitle, redirectTo, footer }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -49,10 +52,17 @@ export function LoginForm({ title, redirectTo, footer }: LoginFormProps) {
 
   return (
     <div style={styles.container}>
+      <div style={{ marginBottom: 24 }}>
+        <BrandMark />
+      </div>
+
       <form style={styles.form} onSubmit={handleSubmit}>
-        <h1 style={styles.title}>{title}</h1>
+        <div>
+          <h1 style={styles.title}>{title}</h1>
+          <p style={styles.subtitle}>{subtitle}</p>
+        </div>
         <input
-          style={styles.input}
+          style={ui.input}
           type="email"
           placeholder="E-mail"
           value={email}
@@ -61,7 +71,7 @@ export function LoginForm({ title, redirectTo, footer }: LoginFormProps) {
           required
         />
         <input
-          style={styles.input}
+          style={ui.input}
           type="password"
           placeholder="Senha"
           value={password}
@@ -69,12 +79,12 @@ export function LoginForm({ title, redirectTo, footer }: LoginFormProps) {
           autoComplete="current-password"
           required
         />
-        {error && <p style={styles.error}>{error}</p>}
-        {resetMessage && <p style={styles.success}>{resetMessage}</p>}
-        <button style={styles.button} type="submit" disabled={submitting}>
+        {error && <p style={ui.error}>{error}</p>}
+        {resetMessage && <p style={ui.success}>{resetMessage}</p>}
+        <button style={ui.buttonPrimary} type="submit" disabled={submitting}>
           {submitting ? 'Entrando...' : 'Entrar'}
         </button>
-        <button type="button" onClick={handleForgotPassword} style={styles.linkButton}>
+        <button type="button" onClick={handleForgotPassword} style={{ ...ui.linkButton, alignSelf: 'center' }}>
           Esqueci minha senha
         </button>
       </form>
@@ -90,60 +100,33 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: 'system-ui, sans-serif',
-    background: '#f5f0f2',
-    padding: '24px 0',
+    fontFamily: brand.bodyFont,
+    background: `linear-gradient(180deg, ${brand.canvas} 0%, #F3E7EE 100%)`,
+    padding: '32px 16px',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 12,
+    gap: 14,
     width: '100%',
-    maxWidth: 340,
-    background: '#ffffff',
-    padding: 32,
-    borderRadius: 16,
-    boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+    maxWidth: 360,
+    background: brand.surface,
+    padding: '32px 28px',
+    borderRadius: 20,
+    boxShadow: '0 12px 32px rgba(93, 30, 105, 0.12)',
+    border: `1px solid ${brand.border}`,
   },
   title: {
-    margin: '0 0 8px',
-    fontSize: 20,
-    textAlign: 'center',
-    color: '#5D1E69',
-  },
-  input: {
-    padding: '12px 14px',
-    borderRadius: 8,
-    border: '1px solid #ddd',
-    fontSize: 14,
-  },
-  button: {
-    marginTop: 8,
-    padding: '12px 14px',
-    borderRadius: 8,
-    border: 'none',
-    background: '#5D1E69',
-    color: '#fff',
+    margin: 0,
+    fontFamily: brand.headingFont,
+    fontSize: 21,
     fontWeight: 600,
-    cursor: 'pointer',
+    color: brand.primary,
   },
-  error: {
-    color: '#c0392b',
+  subtitle: {
+    margin: '4px 0 4px',
     fontSize: 13,
-    margin: 0,
-  },
-  success: {
-    color: '#1e7d32',
-    fontSize: 13,
-    margin: 0,
-  },
-  linkButton: {
-    background: 'none',
-    border: 'none',
-    color: '#5D1E69',
-    fontSize: 13,
-    cursor: 'pointer',
-    textDecoration: 'underline',
-    padding: 0,
+    color: brand.mutedText,
+    lineHeight: 1.4,
   },
 };

@@ -3,6 +3,7 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { db } from '../../firebase/config';
 import type { LandingPageRecord } from '../../types/landingPage';
+import { brand, ui } from '../../styles/adminUi';
 
 export function AffiliateListPage() {
   const [affiliates, setAffiliates] = useState<LandingPageRecord[] | null>(null);
@@ -16,45 +17,69 @@ export function AffiliateListPage() {
   }, []);
 
   return (
-    <div style={{ padding: 32, fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, color: '#5D1E69', margin: 0 }}>Afiliadas</h1>
-        <Link
-          to="/admin/afiliadas/nova"
-          style={{ background: '#5D1E69', color: '#fff', padding: '10px 16px', borderRadius: 8, textDecoration: 'none', fontSize: 14 }}
-        >
+    <div style={ui.content}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+        <div>
+          <h1 style={ui.pageTitle}>Afiliadas</h1>
+          <p style={ui.pageSubtitle}>Cada afiliada tem sua própria página pública, gerada a partir de um dos temas da fábrica.</p>
+        </div>
+        <Link to="/admin/afiliadas/nova" style={{ ...ui.buttonPrimary, textDecoration: 'none', display: 'inline-block' }}>
           + Nova afiliada
         </Link>
       </div>
 
-      {!affiliates && <p>Carregando...</p>}
-      {affiliates && affiliates.length === 0 && <p>Nenhuma afiliada cadastrada ainda.</p>}
+      {!affiliates && <p style={{ color: brand.mutedText, fontSize: 14 }}>Carregando...</p>}
+
+      {affiliates && affiliates.length === 0 && (
+        <div style={{ ...ui.card, ...ui.emptyState }}>
+          <p style={{ margin: '0 0 6px', fontWeight: 600, color: brand.text }}>Nenhuma afiliada cadastrada ainda</p>
+          <p style={{ margin: 0 }}>
+            Clique em <strong>+ Nova afiliada</strong> pra criar a primeira página — isso cria a conta de login dela e
+            a página pública ao mesmo tempo.
+          </p>
+        </div>
+      )}
 
       {affiliates && affiliates.length > 0 && (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '2px solid #eee' }}>
-              <th style={{ padding: 8 }}>Slug</th>
-              <th style={{ padding: 8 }}>Nome</th>
-              <th style={{ padding: 8 }}>Status</th>
-              <th style={{ padding: 8 }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {affiliates.map((a) => (
-              <tr key={a.slug} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={{ padding: 8 }}>{a.slug}</td>
-                <td style={{ padding: 8 }}>{a.affiliateName}</td>
-                <td style={{ padding: 8 }}>{a.status === 'active' ? 'Ativa' : 'Inativa'}</td>
-                <td style={{ padding: 8 }}>
-                  <Link to={`/admin/afiliadas/${a.slug}`} style={{ color: '#5D1E69' }}>
-                    Editar
-                  </Link>
-                </td>
+        <div style={{ ...ui.card, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <thead>
+              <tr style={{ textAlign: 'left', background: brand.canvas }}>
+                <th style={{ padding: '12px 16px', color: brand.mutedText, fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Slug</th>
+                <th style={{ padding: '12px 16px', color: brand.mutedText, fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Nome</th>
+                <th style={{ padding: '12px 16px', color: brand.mutedText, fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Status</th>
+                <th style={{ padding: '12px 16px' }}></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {affiliates.map((a) => (
+                <tr key={a.slug} style={{ borderTop: `1px solid ${brand.border}` }}>
+                  <td style={{ padding: '12px 16px', color: brand.text }}>{a.slug}</td>
+                  <td style={{ padding: '12px 16px', color: brand.text }}>{a.affiliateName}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        padding: '3px 10px',
+                        borderRadius: 999,
+                        background: a.status === 'active' ? '#E6F4EA' : '#F3E7EE',
+                        color: a.status === 'active' ? brand.success : brand.mutedText,
+                      }}
+                    >
+                      {a.status === 'active' ? 'Ativa' : 'Inativa'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                    <Link to={`/admin/afiliadas/${a.slug}`} style={{ ...ui.linkButton, textDecoration: 'none' }}>
+                      Editar
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

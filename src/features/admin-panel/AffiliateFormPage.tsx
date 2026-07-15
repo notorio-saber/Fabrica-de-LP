@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useLandingPageDoc } from '../../hooks/useLandingPageDoc';
@@ -7,6 +7,7 @@ import { landingThemes } from '../landing-page/themes/landingThemes';
 import { defaultLandingPagePermissions, type LandingPagePermissions } from '../../types/landingPage';
 import { createAffiliateAccount } from './services/createAffiliateAccount';
 import { uploadProfilePhoto } from '../affiliate-panel/uploadProfilePhoto';
+import { brand, ui } from '../../styles/adminUi';
 
 const PERMISSION_LABELS: Record<keyof LandingPagePermissions, string> = {
   allowAffiliateNameEdit: 'Nome de exibição',
@@ -51,38 +52,37 @@ function CreateForm() {
   };
 
   return (
-    <div style={{ padding: 32, fontFamily: 'system-ui, sans-serif', maxWidth: 420 }}>
-      <h1 style={{ fontSize: 20, color: '#5D1E69' }}>Nova afiliada</h1>
-      <form
-        style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
-      >
-        <label style={fieldStyle}>
+    <div style={ui.content}>
+      <BackLink />
+      <h1 style={ui.pageTitle}>Nova afiliada</h1>
+      <p style={ui.pageSubtitle}>
+        Isso cria a conta de login da afiliada e a página pública dela ao mesmo tempo, prontas pra ela editar depois
+        de acordo com as permissões que você definir.
+      </p>
+      <form style={{ ...ui.card, display: 'flex', flexDirection: 'column', gap: 16, padding: 24, maxWidth: 420, marginTop: 20 }} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+        <label style={ui.label}>
           Slug (ex: ana)
-          <input style={inputStyle} value={slug} onChange={(e) => setSlug(e.target.value.trim().toLowerCase())} required />
+          <input style={ui.input} value={slug} onChange={(e) => setSlug(e.target.value.trim().toLowerCase())} required />
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           E-mail de login
-          <input style={inputStyle} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input style={ui.input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           Nome de exibição
-          <input style={inputStyle} value={affiliateName} onChange={(e) => setAffiliateName(e.target.value)} required />
+          <input style={ui.input} value={affiliateName} onChange={(e) => setAffiliateName(e.target.value)} required />
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           Link do grupo do WhatsApp
-          <input style={inputStyle} value={whatsappUrl} onChange={(e) => setWhatsappUrl(e.target.value)} required />
+          <input style={ui.input} value={whatsappUrl} onChange={(e) => setWhatsappUrl(e.target.value)} required />
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           ID do Pixel da Meta
-          <input style={inputStyle} value={pixelId} onChange={(e) => setPixelId(e.target.value)} />
+          <input style={ui.input} value={pixelId} onChange={(e) => setPixelId(e.target.value)} />
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           Paleta de cores
-          <select style={inputStyle} value={themeId} onChange={(e) => setThemeId(e.target.value)}>
+          <select style={ui.input} value={themeId} onChange={(e) => setThemeId(e.target.value)}>
             {landingThemes.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
@@ -90,8 +90,8 @@ function CreateForm() {
             ))}
           </select>
         </label>
-        {error && <p style={{ color: '#c0392b', fontSize: 13 }}>{error}</p>}
-        <button type="submit" disabled={submitting} style={buttonStyle}>
+        {error && <p style={ui.error}>{error}</p>}
+        <button type="submit" disabled={submitting} style={ui.buttonPrimary}>
           {submitting ? 'Criando...' : 'Criar afiliada'}
         </button>
       </form>
@@ -124,9 +124,9 @@ function EditForm({ slug }: { slug: string }) {
     }
   }, [state, loaded]);
 
-  if (state.status === 'loading' || !loaded) return <p style={{ padding: 32 }}>Carregando...</p>;
-  if (state.status === 'not-found') return <p style={{ padding: 32 }}>Afiliada não encontrada.</p>;
-  if (state.status === 'error') return <p style={{ padding: 32 }}>Erro: {state.message}</p>;
+  if (state.status === 'loading' || !loaded) return <div style={ui.content}><p style={{ color: brand.mutedText }}>Carregando...</p></div>;
+  if (state.status === 'not-found') return <div style={ui.content}><p style={ui.error}>Afiliada não encontrada.</p></div>;
+  if (state.status === 'error') return <div style={ui.content}><p style={ui.error}>Erro: {state.message}</p></div>;
 
   const handlePhotoChange = async (file: File | undefined) => {
     if (!file) return;
@@ -159,16 +159,12 @@ function EditForm({ slug }: { slug: string }) {
   };
 
   return (
-    <div style={{ padding: 32, fontFamily: 'system-ui, sans-serif', maxWidth: 420 }}>
-      <h1 style={{ fontSize: 20, color: '#5D1E69' }}>Editar {slug}</h1>
-      <form
-        style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSave();
-        }}
-      >
-        <label style={fieldStyle}>
+    <div style={ui.content}>
+      <BackLink />
+      <h1 style={ui.pageTitle}>Editar {slug}</h1>
+      <p style={ui.pageSubtitle}>Ajuste os dados da página e escolha o que essa afiliada pode alterar por conta própria.</p>
+      <form style={{ ...ui.card, display: 'flex', flexDirection: 'column', gap: 16, padding: 24, maxWidth: 420, marginTop: 20 }} onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+        <label style={ui.label}>
           Foto de perfil
           <input
             type="file"
@@ -176,25 +172,25 @@ function EditForm({ slug }: { slug: string }) {
             disabled={uploadingPhoto}
             onChange={(e) => handlePhotoChange(e.target.files?.[0])}
           />
-          {uploadingPhoto && <span style={{ fontSize: 12, color: '#666' }}>Enviando...</span>}
-          {photoError && <span style={{ fontSize: 12, color: '#c0392b' }}>{photoError}</span>}
+          {uploadingPhoto && <span style={{ fontSize: 12, color: brand.mutedText }}>Enviando...</span>}
+          {photoError && <span style={ui.error}>{photoError}</span>}
         </label>
 
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           Nome de exibição
-          <input style={inputStyle} value={affiliateName} onChange={(e) => setAffiliateName(e.target.value)} />
+          <input style={ui.input} value={affiliateName} onChange={(e) => setAffiliateName(e.target.value)} />
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           Link do grupo do WhatsApp
-          <input style={inputStyle} value={whatsappUrl} onChange={(e) => setWhatsappUrl(e.target.value)} />
+          <input style={ui.input} value={whatsappUrl} onChange={(e) => setWhatsappUrl(e.target.value)} />
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           ID do Pixel da Meta
-          <input style={inputStyle} value={pixelId} onChange={(e) => setPixelId(e.target.value)} />
+          <input style={ui.input} value={pixelId} onChange={(e) => setPixelId(e.target.value)} />
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           Paleta de cores
-          <select style={inputStyle} value={themeId} onChange={(e) => setThemeId(e.target.value)}>
+          <select style={ui.input} value={themeId} onChange={(e) => setThemeId(e.target.value)}>
             {landingThemes.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
@@ -202,18 +198,18 @@ function EditForm({ slug }: { slug: string }) {
             ))}
           </select>
         </label>
-        <label style={fieldStyle}>
+        <label style={ui.label}>
           Status
-          <select style={inputStyle} value={status} onChange={(e) => setStatus(e.target.value as 'active' | 'inactive')}>
+          <select style={ui.input} value={status} onChange={(e) => setStatus(e.target.value as 'active' | 'inactive')}>
             <option value="active">Ativa</option>
             <option value="inactive">Inativa</option>
           </select>
         </label>
 
-        <fieldset style={{ border: '1px solid #eee', borderRadius: 8, padding: 12 }}>
-          <legend style={{ fontSize: 13, color: '#666' }}>O que a afiliada pode editar</legend>
+        <fieldset style={{ border: `1px solid ${brand.border}`, borderRadius: 12, padding: 14 }}>
+          <legend style={{ fontSize: 13, color: brand.mutedText, padding: '0 6px' }}>O que a afiliada pode editar</legend>
           {(Object.keys(PERMISSION_LABELS) as Array<keyof LandingPagePermissions>).map((key) => (
-            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '4px 0' }}>
+            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '4px 0', color: brand.text }}>
               <input
                 type="checkbox"
                 checked={permissions[key]}
@@ -224,7 +220,7 @@ function EditForm({ slug }: { slug: string }) {
           ))}
         </fieldset>
 
-        <button type="submit" disabled={saving} style={buttonStyle}>
+        <button type="submit" disabled={saving} style={ui.buttonPrimary}>
           {saving ? 'Salvando...' : 'Salvar'}
         </button>
       </form>
@@ -232,15 +228,10 @@ function EditForm({ slug }: { slug: string }) {
   );
 }
 
-const fieldStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: '#444' };
-const inputStyle: React.CSSProperties = { padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14 };
-const buttonStyle: React.CSSProperties = {
-  marginTop: 8,
-  padding: '12px 14px',
-  borderRadius: 8,
-  border: 'none',
-  background: '#5D1E69',
-  color: '#fff',
-  fontWeight: 600,
-  cursor: 'pointer',
-};
+function BackLink() {
+  return (
+    <Link to="/admin" style={{ ...ui.linkButton, textDecoration: 'none', display: 'inline-block', marginBottom: 12 }}>
+      ← Voltar pra lista de afiliadas
+    </Link>
+  );
+}
