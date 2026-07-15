@@ -1,9 +1,10 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase/config';
 import { BrandMark } from '../components/BrandMark';
 import { brand, ui } from '../styles/adminUi';
+import { useAuth } from './useAuth';
 
 interface LoginFormProps {
   title: string;
@@ -19,6 +20,19 @@ export function LoginForm({ title, subtitle, redirectTo, footer }: LoginFormProp
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  // Sign-in kicks off Firebase's auth state change, but AuthProvider only
+  // finishes resolving the role a moment later (it needs a Firestore read).
+  // Navigating right after signIn's promise resolves races ahead of that and
+  // RequireAdmin/RequireAffiliate see a stale, signed-out state and bounce
+  // straight back here. Waiting for useAuth() itself to settle removes the
+  // race regardless of how long that read takes.
+  useEffect(() => {
+    if (!loading && user) {
+      navigate(redirectTo, { replace: true });
+    }
+  }, [user, loading, redirectTo, navigate]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -27,10 +41,8 @@ export function LoginForm({ title, subtitle, redirectTo, footer }: LoginFormProp
     setSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate(redirectTo, { replace: true });
     } catch {
       setError('E-mail ou senha inválidos.');
-    } finally {
       setSubmitting(false);
     }
   };

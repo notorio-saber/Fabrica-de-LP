@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../../auth/LoginForm';
 import { bootstrapAdmin } from './services/bootstrapAdmin';
 import { brand, ui } from '../../styles/adminUi';
@@ -10,7 +9,6 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const navigate = useNavigate();
 
   const handleBootstrap = async (event: FormEvent) => {
     event.preventDefault();
@@ -18,7 +16,8 @@ export function AdminLoginPage() {
     setSubmitting(true);
     try {
       await bootstrapAdmin(email, password);
-      navigate('/admin', { replace: true });
+      // LoginForm's own effect redirects once useAuth() resolves the new
+      // admin's role — no manual navigate here, see LoginForm.tsx.
     } catch (err) {
       setError(
         err instanceof Error
