@@ -12,26 +12,26 @@ service cloud.firestore {
         && userDoc().data.slug == slug;
     }
 
-    function allowedEditableKeys() {
-      return
-        (resource.data.permissions.allowAffiliateNameEdit ? ['affiliateName']   : []) +
-        (resource.data.permissions.allowProfileImageEdit  ? ['profileImageUrl'] : []) +
-        (resource.data.permissions.allowWhatsAppUrlEdit   ? ['whatsappUrl']     : []) +
-        (resource.data.permissions.allowPixelEdit         ? ['pixelId']         : []) +
-        (resource.data.permissions.allowThemeEdit         ? ['themeId']         : []) +
-        (resource.data.permissions.allowHeadlineEdit      ? ['headline']        : []) +
-        (resource.data.permissions.allowSubheadlineEdit   ? ['subheadline']     : []) +
-        (resource.data.permissions.allowButtonTextEdit    ? ['buttonText']      : []) +
-        ['updatedAt'];
+    function isOwnerUpdatePermitted(slug) {
+      let affected = request.resource.data.diff(resource.data).affectedKeys();
+      let permissions = resource.data.permissions;
+      return isOwner(slug)
+        && affected.hasOnly(['affiliateName', 'profileImageUrl', 'whatsappUrl', 'pixelId', 'themeId', 'headline', 'subheadline', 'buttonText', 'updatedAt'])
+        && (!('affiliateName'   in affected) || permissions.allowAffiliateNameEdit)
+        && (!('profileImageUrl' in affected) || permissions.allowProfileImageEdit)
+        && (!('whatsappUrl'     in affected) || permissions.allowWhatsAppUrlEdit)
+        && (!('pixelId'         in affected) || permissions.allowPixelEdit)
+        && (!('themeId'         in affected) || permissions.allowThemeEdit)
+        && (!('headline'        in affected) || permissions.allowHeadlineEdit)
+        && (!('subheadline'     in affected) || permissions.allowSubheadlineEdit)
+        && (!('buttonText'      in affected) || permissions.allowButtonTextEdit);
     }
 
     match /landingPages/{slug} {
       allow get: if resource.data.status == 'active' || isAdmin() || isOwner(slug);
       allow list: if isAdmin();
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() ||
-        (isOwner(slug) &&
-         request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedEditableKeys()));
+      allow update: if isAdmin() || isOwnerUpdatePermitted(slug);
     }
 
     match /users/{uid} {

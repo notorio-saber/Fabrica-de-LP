@@ -5,6 +5,9 @@ interface LivePreviewPaneProps {
   affiliateName: string;
   profileImageUrl?: string;
   whatsappUrl: string;
+  headline?: string;
+  subheadline?: string;
+  buttonText?: string;
   theme: LandingTheme;
 }
 

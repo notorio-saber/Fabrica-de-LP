@@ -3,10 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useLandingPageDoc } from '../../hooks/useLandingPageDoc';
-import { landingThemes } from '../landing-page/themes/landingThemes';
+import { landingThemes, defaultLandingTheme } from '../landing-page/themes/landingThemes';
 import { defaultLandingPagePermissions, type LandingPagePermissions } from '../../types/landingPage';
 import { createAffiliateAccount } from './services/createAffiliateAccount';
 import { uploadProfilePhoto } from '../affiliate-panel/uploadProfilePhoto';
+import { LivePreviewPane } from '../affiliate-panel/LivePreviewPane';
 import { brand, ui } from '../../styles/adminUi';
 
 const PERMISSION_LABELS: Record<keyof LandingPagePermissions, string> = {
@@ -191,6 +192,8 @@ function EditForm({ slug }: { slug: string }) {
   if (state.status === 'not-found') return <div style={ui.content}><p style={ui.error}>Afiliada não encontrada.</p></div>;
   if (state.status === 'error') return <div style={ui.content}><p style={ui.error}>Erro: {state.message}</p></div>;
 
+  const previewTheme = landingThemes.find((t) => t.id === themeId) ?? defaultLandingTheme;
+
   const handlePhotoChange = async (file: File | undefined) => {
     if (!file) return;
     setPhotoError(null);
@@ -222,71 +225,93 @@ function EditForm({ slug }: { slug: string }) {
   };
 
   return (
-    <div style={ui.content}>
+    <div style={{ ...ui.content, maxWidth: 'none', padding: '32px 40px' }}>
       <BackLink />
       <h1 style={ui.pageTitle}>Editar {slug}</h1>
       <p style={ui.pageSubtitle}>Ajuste os dados da página e escolha o que essa afiliada pode alterar por conta própria.</p>
-      <form style={{ ...ui.card, display: 'flex', flexDirection: 'column', gap: 16, padding: 24, maxWidth: 420, marginTop: 20 }} onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-        <label style={ui.label}>
-          Foto de perfil
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            disabled={uploadingPhoto}
-            onChange={(e) => handlePhotoChange(e.target.files?.[0])}
-          />
-          {uploadingPhoto && <span style={{ fontSize: 12, color: brand.mutedText }}>Enviando...</span>}
-          {photoError && <span style={ui.error}>{photoError}</span>}
-        </label>
 
-        <label style={ui.label}>
-          Nome de exibição
-          <input style={ui.input} value={affiliateName} onChange={(e) => setAffiliateName(e.target.value)} />
-        </label>
-        <label style={ui.label}>
-          Link do grupo do WhatsApp
-          <input style={ui.input} value={whatsappUrl} onChange={(e) => setWhatsappUrl(e.target.value)} />
-        </label>
-        <label style={ui.label}>
-          ID do Pixel da Meta
-          <input style={ui.input} value={pixelId} onChange={(e) => setPixelId(e.target.value)} />
-        </label>
-        <label style={ui.label}>
-          Paleta de cores
-          <select style={ui.input} value={themeId} onChange={(e) => setThemeId(e.target.value)}>
-            {landingThemes.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label style={ui.label}>
-          Status
-          <select style={ui.input} value={status} onChange={(e) => setStatus(e.target.value as 'active' | 'inactive')}>
-            <option value="active">Ativa</option>
-            <option value="inactive">Inativa</option>
-          </select>
-        </label>
-
-        <fieldset style={{ border: `1px solid ${brand.border}`, borderRadius: 12, padding: 14 }}>
-          <legend style={{ fontSize: 13, color: brand.mutedText, padding: '0 6px' }}>O que a afiliada pode editar</legend>
-          {(Object.keys(PERMISSION_LABELS) as Array<keyof LandingPagePermissions>).map((key) => (
-            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '4px 0', color: brand.text }}>
+      <div style={{ display: 'flex', gap: 32, marginTop: 20, alignItems: 'flex-start' }}>
+        <form
+          style={{ ...ui.card, display: 'flex', flexDirection: 'column', gap: 16, padding: 28, flex: 1, minWidth: 320 }}
+          onSubmit={(e) => { e.preventDefault(); handleSave(); }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
+            <label style={ui.label}>
+              Foto de perfil
               <input
-                type="checkbox"
-                checked={permissions[key]}
-                onChange={(e) => setPermissions({ ...permissions, [key]: e.target.checked })}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={uploadingPhoto}
+                onChange={(e) => handlePhotoChange(e.target.files?.[0])}
               />
-              {PERMISSION_LABELS[key]}
+              {uploadingPhoto && <span style={{ fontSize: 12, color: brand.mutedText }}>Enviando...</span>}
+              {photoError && <span style={ui.error}>{photoError}</span>}
             </label>
-          ))}
-        </fieldset>
 
-        <button type="submit" disabled={saving} style={ui.buttonPrimary}>
-          {saving ? 'Salvando...' : 'Salvar'}
-        </button>
-      </form>
+            <label style={ui.label}>
+              Nome de exibição
+              <input style={ui.input} value={affiliateName} onChange={(e) => setAffiliateName(e.target.value)} />
+            </label>
+            <label style={ui.label}>
+              Link do grupo do WhatsApp
+              <input style={ui.input} value={whatsappUrl} onChange={(e) => setWhatsappUrl(e.target.value)} />
+            </label>
+            <label style={ui.label}>
+              ID do Pixel da Meta
+              <input style={ui.input} value={pixelId} onChange={(e) => setPixelId(e.target.value)} />
+            </label>
+            <label style={ui.label}>
+              Paleta de cores
+              <select style={ui.input} value={themeId} onChange={(e) => setThemeId(e.target.value)}>
+                {landingThemes.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label style={ui.label}>
+              Status
+              <select style={ui.input} value={status} onChange={(e) => setStatus(e.target.value as 'active' | 'inactive')}>
+                <option value="active">Ativa</option>
+                <option value="inactive">Inativa</option>
+              </select>
+            </label>
+          </div>
+
+          <fieldset style={{ border: `1px solid ${brand.border}`, borderRadius: 12, padding: 14 }}>
+            <legend style={{ fontSize: 13, color: brand.mutedText, padding: '0 6px' }}>O que a afiliada pode editar</legend>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+              {(Object.keys(PERMISSION_LABELS) as Array<keyof LandingPagePermissions>).map((key) => (
+                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '4px 0', color: brand.text }}>
+                  <input
+                    type="checkbox"
+                    checked={permissions[key]}
+                    onChange={(e) => setPermissions({ ...permissions, [key]: e.target.checked })}
+                  />
+                  {PERMISSION_LABELS[key]}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <button type="submit" disabled={saving} style={{ ...ui.buttonPrimary, alignSelf: 'flex-start' }}>
+            {saving ? 'Salvando...' : 'Salvar'}
+          </button>
+        </form>
+
+        <div style={{ flexShrink: 0 }}>
+          <LivePreviewPane
+            affiliateName={affiliateName}
+            profileImageUrl={state.data.profileImageUrl ?? undefined}
+            whatsappUrl={whatsappUrl}
+            headline={state.data.headline ?? undefined}
+            subheadline={state.data.subheadline ?? undefined}
+            buttonText={state.data.buttonText ?? undefined}
+            theme={previewTheme}
+          />
+        </div>
+      </div>
     </div>
   );
 }

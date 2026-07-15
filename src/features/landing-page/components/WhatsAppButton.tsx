@@ -1,11 +1,14 @@
 import { WhatsAppIcon } from './WhatsAppIcon';
 
+const DEFAULT_BUTTON_TEXT = 'ENTRAR NO GRUPO 🤍';
+
 interface WhatsAppButtonProps {
   url: string;
+  buttonText?: string;
   eventName?: string;
 }
 
-export function WhatsAppButton({ url, eventName = 'Lead' }: WhatsAppButtonProps) {
+export function WhatsAppButton({ url, buttonText, eventName = 'Lead' }: WhatsAppButtonProps) {
   const handleClick = () => {
     try {
       window.fbq?.('track', eventName);
@@ -24,7 +27,7 @@ export function WhatsAppButton({ url, eventName = 'Lead' }: WhatsAppButtonProps)
         onClick={handleClick}
       >
         <WhatsAppIcon className="julia-whatsapp-button-icon" />
-        <span className="julia-whatsapp-button-text">ENTRAR NO GRUPO 🤍</span>
+        <span className="julia-whatsapp-button-text">{buttonText || DEFAULT_BUTTON_TEXT}</span>
       </a>
     </div>
   );

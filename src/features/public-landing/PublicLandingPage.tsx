@@ -35,6 +35,9 @@ export function PublicLandingPage() {
       affiliateName={data.affiliateName}
       profileImageUrl={data.profileImageUrl ?? undefined}
       whatsappUrl={data.whatsappUrl}
+      headline={data.headline ?? undefined}
+      subheadline={data.subheadline ?? undefined}
+      buttonText={data.buttonText ?? undefined}
       theme={theme}
     />
   );

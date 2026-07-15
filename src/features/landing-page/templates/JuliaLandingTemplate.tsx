@@ -16,6 +16,9 @@ interface JuliaLandingTemplateProps {
   affiliateName: string;
   profileImageUrl?: string;
   whatsappUrl: string;
+  headline?: string;
+  subheadline?: string;
+  buttonText?: string;
   theme?: LandingTheme;
 }
 
@@ -23,6 +26,9 @@ export function JuliaLandingTemplate({
   affiliateName,
   profileImageUrl,
   whatsappUrl,
+  headline,
+  subheadline,
+  buttonText,
   theme = defaultLandingTheme,
 }: JuliaLandingTemplateProps) {
   const themeVars = {
@@ -42,7 +48,7 @@ export function JuliaLandingTemplate({
     <div className="julia-landing-template" style={themeVars}>
       <section className="julia-section julia-section--hero">
         <div className="julia-card--hero">
-          <LandingHero />
+          <LandingHero headline={headline} />
           <AffiliateProfile name={affiliateName} photoUrl={profileImageUrl} />
           <HandlesMarquee />
         </div>
@@ -51,8 +57,8 @@ export function JuliaLandingTemplate({
       <section className="julia-section julia-section--offer">
         <div className="julia-section-inner">
           <div className="julia-card--offer">
-            <OfferSection />
-            <WhatsAppButton url={whatsappUrl} />
+            <OfferSection subheadline={subheadline} />
+            <WhatsAppButton url={whatsappUrl} buttonText={buttonText} />
             <MarketplaceLogos />
             <BenefitsSection />
             <BrandsCarousel />
