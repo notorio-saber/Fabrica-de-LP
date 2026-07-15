@@ -82,6 +82,17 @@ export function AffiliateEditPage() {
     }
   };
 
+  const showProfileSection = permissions.allowProfileImageEdit || permissions.allowAffiliateNameEdit;
+  const showContactSection = permissions.allowWhatsAppUrlEdit || permissions.allowPixelEdit;
+  const showAppearanceSection = permissions.allowThemeEdit;
+  const showCopySection = permissions.allowHeadlineEdit || permissions.allowSubheadlineEdit || permissions.allowButtonTextEdit;
+  const firstSection = [
+    ['profile', showProfileSection],
+    ['contact', showContactSection],
+    ['appearance', showAppearanceSection],
+    ['copy', showCopySection],
+  ].find(([, shown]) => shown)?.[0];
+
   return (
     <div style={{ ...ui.content, maxWidth: 'none', padding: '32px 40px' }}>
       <h1 style={ui.pageTitle}>Editar minha página</h1>
@@ -89,112 +100,132 @@ export function AffiliateEditPage() {
 
       <div style={{ display: 'flex', gap: 32, marginTop: 20, alignItems: 'flex-start' }}>
         <form
-          style={{ ...ui.card, display: 'flex', flexDirection: 'column', gap: 16, padding: 28, flex: 1, minWidth: 320 }}
+          style={{ ...ui.card, display: 'flex', flexDirection: 'column', gap: 24, padding: 28, flex: 1, minWidth: 320 }}
           onSubmit={(e) => {
             e.preventDefault();
             handleSave();
           }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
-            {permissions.allowProfileImageEdit && (
-              <label style={ui.label}>
-                Foto de perfil
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={uploadingPhoto}
-                  onChange={(e) => handlePhotoChange(e.target.files?.[0])}
-                />
-                {uploadingPhoto && <span style={{ fontSize: 12, color: brand.mutedText }}>Enviando...</span>}
-                {photoError && <span style={ui.error}>{photoError}</span>}
-              </label>
-            )}
+          {showProfileSection && (
+            <FormSection title="Perfil" divider={firstSection !== 'profile'}>
+              <div style={sectionGrid}>
+                {permissions.allowProfileImageEdit && (
+                  <label style={ui.label}>
+                    Foto de perfil
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      disabled={uploadingPhoto}
+                      onChange={(e) => handlePhotoChange(e.target.files?.[0])}
+                    />
+                    {uploadingPhoto && <span style={{ fontSize: 12, color: brand.mutedText }}>Enviando...</span>}
+                    {photoError && <span style={ui.error}>{photoError}</span>}
+                  </label>
+                )}
 
-            {permissions.allowAffiliateNameEdit && (
-              <label style={ui.label}>
-                Nome de exibição
-                <input
-                  style={ui.input}
-                  value={draft.affiliateName}
-                  onChange={(e) => setDraft({ ...draft, affiliateName: e.target.value })}
-                />
-              </label>
-            )}
-
-            {permissions.allowWhatsAppUrlEdit && (
-              <label style={ui.label}>
-                Link do grupo do WhatsApp
-                <input
-                  style={ui.input}
-                  value={draft.whatsappUrl}
-                  onChange={(e) => setDraft({ ...draft, whatsappUrl: e.target.value })}
-                />
-              </label>
-            )}
-
-            {permissions.allowPixelEdit && (
-              <label style={ui.label}>
-                ID do Pixel da Meta
-                <input
-                  style={ui.input}
-                  value={draft.pixelId}
-                  onChange={(e) => setDraft({ ...draft, pixelId: e.target.value })}
-                />
-              </label>
-            )}
-
-            {permissions.allowThemeEdit && (
-              <label style={ui.label}>
-                Paleta de cores
-                <select
-                  style={ui.input}
-                  value={draft.themeId}
-                  onChange={(e) => setDraft({ ...draft, themeId: e.target.value })}
-                >
-                  {landingThemes.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-
-            {permissions.allowButtonTextEdit && (
-              <label style={ui.label}>
-                Texto do botão
-                <input
-                  style={ui.input}
-                  value={draft.buttonText}
-                  placeholder="ENTRAR NO GRUPO 🤍"
-                  onChange={(e) => setDraft({ ...draft, buttonText: e.target.value })}
-                />
-              </label>
-            )}
-          </div>
-
-          {permissions.allowHeadlineEdit && (
-            <label style={ui.label}>
-              Título principal
-              <textarea
-                style={{ ...ui.input, resize: 'vertical', minHeight: 60, fontFamily: 'inherit' }}
-                value={draft.headline}
-                placeholder="CURADORIA EXCLUSIVA DOS PRODUTOS DE BELEZA MAIS DESEJADOS DO MOMENTO"
-                onChange={(e) => setDraft({ ...draft, headline: e.target.value })}
-              />
-            </label>
+                {permissions.allowAffiliateNameEdit && (
+                  <label style={ui.label}>
+                    Nome de exibição
+                    <input
+                      style={ui.input}
+                      value={draft.affiliateName}
+                      onChange={(e) => setDraft({ ...draft, affiliateName: e.target.value })}
+                    />
+                  </label>
+                )}
+              </div>
+            </FormSection>
           )}
 
-          {permissions.allowSubheadlineEdit && (
-            <label style={ui.label}>
-              Subtítulo
-              <textarea
-                style={{ ...ui.input, resize: 'vertical', minHeight: 60, fontFamily: 'inherit' }}
-                value={draft.subheadline}
-                placeholder="Uma seleção diária com marcas confiáveis..."
-                onChange={(e) => setDraft({ ...draft, subheadline: e.target.value })}
-              />
-            </label>
+          {showContactSection && (
+            <FormSection title="Contato" divider={firstSection !== 'contact'}>
+              <div style={sectionGrid}>
+                {permissions.allowWhatsAppUrlEdit && (
+                  <label style={ui.label}>
+                    Link do grupo do WhatsApp
+                    <input
+                      style={ui.input}
+                      value={draft.whatsappUrl}
+                      onChange={(e) => setDraft({ ...draft, whatsappUrl: e.target.value })}
+                    />
+                  </label>
+                )}
+
+                {permissions.allowPixelEdit && (
+                  <label style={ui.label}>
+                    ID do Pixel da Meta
+                    <input
+                      style={ui.input}
+                      value={draft.pixelId}
+                      onChange={(e) => setDraft({ ...draft, pixelId: e.target.value })}
+                    />
+                  </label>
+                )}
+              </div>
+            </FormSection>
+          )}
+
+          {showAppearanceSection && (
+            <FormSection title="Aparência" divider={firstSection !== 'appearance'}>
+              <div style={sectionGrid}>
+                <label style={ui.label}>
+                  Paleta de cores
+                  <select
+                    style={ui.input}
+                    value={draft.themeId}
+                    onChange={(e) => setDraft({ ...draft, themeId: e.target.value })}
+                  >
+                    {landingThemes.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </FormSection>
+          )}
+
+          {showCopySection && (
+            <FormSection title="Textos da página" divider={firstSection !== 'copy'}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {permissions.allowHeadlineEdit && (
+                  <label style={ui.label}>
+                    Título principal
+                    <textarea
+                      style={{ ...ui.input, resize: 'vertical', minHeight: 60, fontFamily: 'inherit' }}
+                      value={draft.headline}
+                      placeholder="CURADORIA EXCLUSIVA DOS PRODUTOS DE BELEZA MAIS DESEJADOS DO MOMENTO"
+                      onChange={(e) => setDraft({ ...draft, headline: e.target.value })}
+                    />
+                  </label>
+                )}
+
+                {permissions.allowSubheadlineEdit && (
+                  <label style={ui.label}>
+                    Subtítulo
+                    <textarea
+                      style={{ ...ui.input, resize: 'vertical', minHeight: 60, fontFamily: 'inherit' }}
+                      value={draft.subheadline}
+                      placeholder="Uma seleção diária com marcas confiáveis..."
+                      onChange={(e) => setDraft({ ...draft, subheadline: e.target.value })}
+                    />
+                  </label>
+                )}
+
+                {permissions.allowButtonTextEdit && (
+                  <label style={ui.label}>
+                    Texto do botão
+                    <input
+                      style={ui.input}
+                      value={draft.buttonText}
+                      placeholder="ENTRAR NO GRUPO 🤍"
+                      onChange={(e) => setDraft({ ...draft, buttonText: e.target.value })}
+                    />
+                  </label>
+                )}
+              </div>
+            </FormSection>
           )}
 
           {noPermissionsGranted && (
@@ -209,7 +240,7 @@ export function AffiliateEditPage() {
           {savedAt && <p style={ui.success}>Salvo!</p>}
         </form>
 
-        <div style={{ flexShrink: 0 }}>
+        <div style={{ flexShrink: 0, position: 'sticky', top: 32 }}>
           <LivePreviewPane
             affiliateName={draft.affiliateName}
             profileImageUrl={state.data.profileImageUrl ?? undefined}
@@ -221,6 +252,33 @@ export function AffiliateEditPage() {
           />
         </div>
       </div>
+    </div>
+  );
+}
+
+const sectionGrid: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+  gap: 16,
+};
+
+function FormSection({ title, divider = true, children }: { title: string; divider?: boolean; children: React.ReactNode }) {
+  return (
+    <div style={divider ? { borderTop: `1px solid ${brand.border}`, paddingTop: 20 } : undefined}>
+      <h2
+        style={{
+          fontFamily: brand.headingFont,
+          fontSize: 13,
+          fontWeight: 700,
+          color: brand.mutedText,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          margin: '0 0 14px',
+        }}
+      >
+        {title}
+      </h2>
+      {children}
     </div>
   );
 }
