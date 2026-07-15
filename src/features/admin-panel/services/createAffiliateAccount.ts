@@ -13,18 +13,29 @@ interface CreateAffiliateInput {
   themeId: string;
 }
 
+const PASSWORD_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+
 function randomTempPassword() {
-  return crypto.randomUUID();
+  let password = '';
+  for (let i = 0; i < 10; i++) {
+    password += PASSWORD_CHARS[Math.floor(Math.random() * PASSWORD_CHARS.length)];
+  }
+  return password;
 }
 
-export async function createAffiliateAccount(input: CreateAffiliateInput): Promise<void> {
+export interface CreateAffiliateResult {
+  password: string;
+}
+
+export async function createAffiliateAccount(input: CreateAffiliateInput): Promise<CreateAffiliateResult> {
   const existing = await getDoc(doc(db, 'landingPages', input.slug));
   if (existing.exists()) {
     throw new Error('Esse slug já está em uso.');
   }
 
+  const password = randomTempPassword();
   const secondaryAuth = getAdminUserCreationAuth();
-  const credential = await createUserWithEmailAndPassword(secondaryAuth, input.email, randomTempPassword());
+  const credential = await createUserWithEmailAndPassword(secondaryAuth, input.email, password);
   const uid = credential.user.uid;
 
   try {
@@ -52,8 +63,17 @@ export async function createAffiliateAccount(input: CreateAffiliateInput): Promi
       updatedAt: serverTimestamp(),
     });
 
-    await sendPasswordResetEmail(secondaryAuth, input.email);
+    // Best-effort backup: the admin shares the password above directly, so a
+    // failure to send this email (deliverability, spam filters) shouldn't
+    // block affiliate creation.
+    try {
+      await sendPasswordResetEmail(secondaryAuth, input.email);
+    } catch {
+      // ignored — password above is the primary way the affiliate gets in.
+    }
   } finally {
     await signOut(secondaryAuth);
   }
+
+  return { password };
 }

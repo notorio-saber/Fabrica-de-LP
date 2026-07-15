@@ -48,6 +48,7 @@ export function AffiliateListPage() {
                 <th style={{ padding: '12px 16px', color: brand.mutedText, fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Slug</th>
                 <th style={{ padding: '12px 16px', color: brand.mutedText, fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Nome</th>
                 <th style={{ padding: '12px 16px', color: brand.mutedText, fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Status</th>
+                <th style={{ padding: '12px 16px', color: brand.mutedText, fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Link da página</th>
                 <th style={{ padding: '12px 16px' }}></th>
               </tr>
             </thead>
@@ -69,6 +70,16 @@ export function AffiliateListPage() {
                     >
                       {a.status === 'active' ? 'Ativa' : 'Inativa'}
                     </span>
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <a
+                      href={`/p/${a.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ ...ui.linkButton, textDecoration: 'none' }}
+                    >
+                      /p/{a.slug}
+                    </a>
                   </td>
                   <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                     <Link to={`/admin/afiliadas/${a.slug}`} style={{ ...ui.linkButton, textDecoration: 'none' }}>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useLandingPageDoc } from '../../hooks/useLandingPageDoc';
@@ -27,8 +27,13 @@ export function AffiliateFormPage() {
   return isEditing ? <EditForm slug={routeSlug!} /> : <CreateForm />;
 }
 
+interface CreatedAffiliate {
+  slug: string;
+  email: string;
+  password: string;
+}
+
 function CreateForm() {
-  const navigate = useNavigate();
   const [slug, setSlug] = useState('');
   const [email, setEmail] = useState('');
   const [affiliateName, setAffiliateName] = useState('');
@@ -37,19 +42,24 @@ function CreateForm() {
   const [themeId, setThemeId] = useState(landingThemes[0].id);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [created, setCreated] = useState<CreatedAffiliate | null>(null);
 
   const handleSubmit = async () => {
     setError(null);
     setSubmitting(true);
     try {
-      await createAffiliateAccount({ slug, email, affiliateName, whatsappUrl, pixelId, themeId });
-      navigate('/admin');
+      const { password } = await createAffiliateAccount({ slug, email, affiliateName, whatsappUrl, pixelId, themeId });
+      setCreated({ slug, email, password });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar afiliada.');
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (created) {
+    return <CreatedAffiliateSummary affiliate={created} />;
+  }
 
   return (
     <div style={ui.content}>
@@ -95,6 +105,59 @@ function CreateForm() {
           {submitting ? 'Criando...' : 'Criar afiliada'}
         </button>
       </form>
+    </div>
+  );
+}
+
+function CreatedAffiliateSummary({ affiliate }: { affiliate: CreatedAffiliate }) {
+  const [copied, setCopied] = useState(false);
+  const pageUrl = `${window.location.origin}/p/${affiliate.slug}`;
+  const message = [
+    'Sua página da Fábrica de Landing Page está pronta!',
+    '',
+    `Link da sua página: ${pageUrl}`,
+    '',
+    'Pra editar foto, texto, link e cor, entre no painel:',
+    `${window.location.origin}/painel/login`,
+    `E-mail: ${affiliate.email}`,
+    `Senha: ${affiliate.password}`,
+  ].join('\n');
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(message);
+    setCopied(true);
+  };
+
+  return (
+    <div style={ui.content}>
+      <BackLink />
+      <h1 style={ui.pageTitle}>Afiliada criada!</h1>
+      <p style={ui.pageSubtitle}>
+        Copie a mensagem abaixo e mande pra ela pelo WhatsApp — é a única vez que a senha aparece aqui.
+      </p>
+
+      <div style={{ ...ui.card, padding: 24, maxWidth: 480, marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <p style={{ margin: '0 0 4px', fontSize: 12, color: brand.mutedText, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+            Link da página pública
+          </p>
+          <p style={{ margin: 0, fontWeight: 600 }}>{pageUrl}</p>
+        </div>
+        <div>
+          <p style={{ margin: '0 0 4px', fontSize: 12, color: brand.mutedText, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+            Login do painel
+          </p>
+          <p style={{ margin: 0 }}>{affiliate.email}</p>
+          <p style={{ margin: 0, fontWeight: 600, fontFamily: 'monospace', fontSize: 15 }}>{affiliate.password}</p>
+        </div>
+
+        <button type="button" onClick={handleCopy} style={ui.buttonPrimary}>
+          {copied ? 'Copiado!' : 'Copiar mensagem pra enviar'}
+        </button>
+        <Link to="/admin" style={{ ...ui.buttonSecondary, textAlign: 'center', textDecoration: 'none' }}>
+          Voltar pra lista de afiliadas
+        </Link>
+      </div>
     </div>
   );
 }
