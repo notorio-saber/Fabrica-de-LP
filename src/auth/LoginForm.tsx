@@ -34,6 +34,21 @@ export function LoginForm({ title, subtitle, redirectTo, footer }: LoginFormProp
     }
   }, [user, loading, redirectTo, navigate]);
 
+  // If sign-in succeeds but the role lookup never comes back (a browser
+  // extension blocking requests to firestore.googleapis.com is the usual
+  // cause), the effect above never fires and the button would otherwise
+  // spin forever with no explanation.
+  useEffect(() => {
+    if (!submitting) return;
+    const timeout = setTimeout(() => {
+      setError(
+        'Isso está demorando mais que o normal. Uma extensão do navegador (bloqueador de anúncios/rastreadores) pode estar bloqueando a conexão com o Firestore — tente numa aba anônima ou desative a extensão pra este site.'
+      );
+      setSubmitting(false);
+    }, 8000);
+    return () => clearTimeout(timeout);
+  }, [submitting]);
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
