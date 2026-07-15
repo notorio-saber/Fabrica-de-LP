@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { JuliaLandingTemplate } from '../landing-page/templates/JuliaLandingTemplate';
 import { landingThemes, defaultLandingTheme } from '../landing-page/themes/landingThemes';
 import { resolveSlug } from './resolveSlug';
@@ -9,8 +9,11 @@ export function PublicLandingPage() {
   const { slug: paramSlug } = useParams<{ slug?: string }>();
   const slug = resolveSlug(window.location.hostname, paramSlug);
   const state = useLandingPageDoc(slug, { requireActive: true });
-
   useMetaPixel(state.status === 'ready' ? state.data.pixelId : null);
+
+  if (slug === null) {
+    return <Navigate to="/admin/login" replace />;
+  }
 
   if (state.status === 'loading') {
     return null;

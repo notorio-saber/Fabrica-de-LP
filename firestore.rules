@@ -37,7 +37,17 @@ service cloud.firestore {
     match /users/{uid} {
       allow get: if isSignedIn() && (request.auth.uid == uid || isAdmin());
       allow list: if isAdmin();
-      allow create, update, delete: if isAdmin();
+      allow create: if isAdmin() ||
+        (isSignedIn() && request.auth.uid == uid &&
+         request.resource.data.role == 'admin' &&
+         !exists(/databases/$(database)/documents/bootstrap/admin));
+      allow update, delete: if isAdmin();
+    }
+
+    // One-time marker: whoever creates this claims the first admin account.
+    // Once it exists, the self-provisioning branch above is closed forever.
+    match /bootstrap/admin {
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
     }
   }
 }
