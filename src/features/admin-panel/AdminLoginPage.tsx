@@ -18,8 +18,12 @@ export function AdminLoginPage() {
     try {
       await bootstrapAdmin(email, password);
       navigate('/admin', { replace: true });
-    } catch {
-      setError('Não foi possível criar o administrador (talvez já exista um). Peça pra ele te cadastrar.');
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Não foi possível criar o administrador (talvez já exista um). Peça pra ele te cadastrar.'
+      );
     } finally {
       setSubmitting(false);
     }

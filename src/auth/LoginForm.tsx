@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase/config';
 
@@ -13,12 +13,14 @@ export function LoginForm({ title, redirectTo, footer }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
+    setResetMessage(null);
     setSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -27,6 +29,21 @@ export function LoginForm({ title, redirectTo, footer }: LoginFormProps) {
       setError('E-mail ou senha inválidos.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setError(null);
+    setResetMessage(null);
+    if (!email) {
+      setError('Digite seu e-mail acima antes de pedir a redefinição de senha.');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setResetMessage('Enviamos um e-mail com o link pra redefinir sua senha.');
+    } catch {
+      setError('Não foi possível enviar o e-mail de redefinição.');
     }
   };
 
@@ -53,8 +70,12 @@ export function LoginForm({ title, redirectTo, footer }: LoginFormProps) {
           required
         />
         {error && <p style={styles.error}>{error}</p>}
+        {resetMessage && <p style={styles.success}>{resetMessage}</p>}
         <button style={styles.button} type="submit" disabled={submitting}>
           {submitting ? 'Entrando...' : 'Entrar'}
+        </button>
+        <button type="button" onClick={handleForgotPassword} style={styles.linkButton}>
+          Esqueci minha senha
         </button>
       </form>
       {footer}
@@ -110,5 +131,19 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#c0392b',
     fontSize: 13,
     margin: 0,
+  },
+  success: {
+    color: '#1e7d32',
+    fontSize: 13,
+    margin: 0,
+  },
+  linkButton: {
+    background: 'none',
+    border: 'none',
+    color: '#5D1E69',
+    fontSize: 13,
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    padding: 0,
   },
 };
