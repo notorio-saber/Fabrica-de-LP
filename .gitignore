@@ -9,3 +9,4 @@ dist-ssr/
 .audit/
 .firebase/
 .netlify/
+.claude/settings.local.json
