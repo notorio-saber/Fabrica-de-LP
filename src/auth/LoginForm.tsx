@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase/config';
@@ -6,9 +6,10 @@ import { auth } from '../firebase/config';
 interface LoginFormProps {
   title: string;
   redirectTo: string;
+  footer?: ReactNode;
 }
 
-export function LoginForm({ title, redirectTo }: LoginFormProps) {
+export function LoginForm({ title, redirectTo, footer }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export function LoginForm({ title, redirectTo }: LoginFormProps) {
           {submitting ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
+      {footer}
     </div>
   );
 }
@@ -64,10 +66,12 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     minHeight: '100vh',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     fontFamily: 'system-ui, sans-serif',
     background: '#f5f0f2',
+    padding: '24px 0',
   },
   form: {
     display: 'flex',
