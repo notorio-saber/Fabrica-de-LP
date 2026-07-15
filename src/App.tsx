@@ -1,11 +1,11 @@
-import { JuliaLandingTemplate } from './features/landing-page/templates/JuliaLandingTemplate';
+import { AuthProvider } from './auth/AuthProvider';
+import { AppRouter } from './routes/AppRouter';
 
 function App() {
   return (
-    <JuliaLandingTemplate
-      affiliateName="Julia"
-      whatsappUrl="https://chat.whatsapp.com/DhUbb4afWBQ28otWeLEEqA?mode=gi_t"
-    />
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
   );
 }
 

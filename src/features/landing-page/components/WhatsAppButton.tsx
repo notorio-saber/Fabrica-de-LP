@@ -5,12 +5,6 @@ interface WhatsAppButtonProps {
   eventName?: string;
 }
 
-declare global {
-  interface Window {
-    fbq?: (...args: unknown[]) => void;
-  }
-}
-
 export function WhatsAppButton({ url, eventName = 'Lead' }: WhatsAppButtonProps) {
   const handleClick = () => {
     try {

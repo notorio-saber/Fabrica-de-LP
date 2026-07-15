@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function userDoc() { return get(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function isAdmin() { return isSignedIn() && userDoc().data.role == 'admin'; }
+    function isOwner(slug) {
+      return isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && userDoc().data.role == 'affiliate'
+        && userDoc().data.slug == slug;
+    }
+
+    function allowedEditableKeys() {
+      return
+        (resource.data.permissions.allowAffiliateNameEdit ? ['affiliateName']   : []) +
+        (resource.data.permissions.allowProfileImageEdit  ? ['profileImageUrl'] : []) +
+        (resource.data.permissions.allowWhatsAppUrlEdit   ? ['whatsappUrl']     : []) +
+        (resource.data.permissions.allowPixelEdit         ? ['pixelId']         : []) +
+        (resource.data.permissions.allowThemeEdit         ? ['themeId']         : []) +
+        (resource.data.permissions.allowHeadlineEdit      ? ['headline']        : []) +
+        (resource.data.permissions.allowSubheadlineEdit   ? ['subheadline']     : []) +
+        (resource.data.permissions.allowButtonTextEdit    ? ['buttonText']      : []) +
+        ['updatedAt'];
+    }
+
+    match /landingPages/{slug} {
+      allow get: if resource.data.status == 'active' || isAdmin() || isOwner(slug);
+      allow list: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() ||
+        (isOwner(slug) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedEditableKeys()));
+    }
+
+    match /users/{uid} {
+      allow get: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}
