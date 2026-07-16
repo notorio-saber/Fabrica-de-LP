@@ -87,6 +87,7 @@ export function AdminLoginPage() {
       title="Painel administrativo"
       subtitle="Gerencie as afiliadas e as páginas geradas pela fábrica."
       redirectTo="/admin"
+      expectedRole="admin"
       footer={footer}
     />
   );

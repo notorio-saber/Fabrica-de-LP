@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import { sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { BrandMark } from '../components/BrandMark';
 import { brand, ui } from '../styles/adminUi';
@@ -9,17 +9,18 @@ interface LoginFormProps {
   title: string;
   subtitle: string;
   redirectTo: string;
+  expectedRole: 'admin' | 'affiliate';
   footer?: ReactNode;
 }
 
-export function LoginForm({ title, subtitle, redirectTo, footer }: LoginFormProps) {
+export function LoginForm({ title, subtitle, redirectTo, expectedRole, footer }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [stuck, setStuck] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
 
   // Sign-in kicks off Firebase's auth state change, but AuthProvider only
   // finishes resolving the role a moment later (it needs a Firestore read).
@@ -29,11 +30,23 @@ export function LoginForm({ title, subtitle, redirectTo, footer }: LoginFormProp
   // fired only once useAuth() itself has actually settled sidesteps the
   // whole class of SPA-state timing bugs — the destination route boots
   // fresh with a session that's already persisted.
+  //
+  // Redirecting on `user` alone (regardless of role) creates an infinite
+  // reload loop for a signed-in account that isn't actually admin/affiliate:
+  // this effect sends it to redirectTo, RequireAdmin/RequireAffiliate bounces
+  // it straight back here since the role doesn't match, and this effect
+  // fires again — each cycle a full page reload. Checking role directly
+  // breaks that loop and surfaces it as a real error instead.
   useEffect(() => {
-    if (!loading && user) {
+    if (loading || !user) return;
+    if (role === expectedRole) {
       window.location.assign(redirectTo);
+    } else {
+      setError('Essa conta não tem acesso a este painel.');
+      setSubmitting(false);
+      signOut(auth);
     }
-  }, [user, loading, redirectTo]);
+  }, [user, role, loading, redirectTo, expectedRole]);
 
   // If sign-in succeeds but the role lookup never comes back (a browser
   // extension or security software blocking requests to
