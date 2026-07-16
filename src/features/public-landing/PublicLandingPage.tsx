@@ -39,6 +39,7 @@ export function PublicLandingPage() {
       subheadline={data.subheadline ?? undefined}
       buttonText={data.buttonText ?? undefined}
       theme={theme}
+      sections={data.sections}
     />
   );
 }

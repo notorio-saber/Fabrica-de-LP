@@ -2,7 +2,7 @@ import { createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '../../../firebase/config';
 import { getAdminUserCreationAuth } from '../../../firebase/adminUserCreationApp';
-import { defaultLandingPagePermissions } from '../../../types/landingPage';
+import { defaultLandingPagePermissions, defaultSectionsConfig } from '../../../types/landingPage';
 
 interface CreateAffiliateInput {
   slug: string;
@@ -59,6 +59,7 @@ export async function createAffiliateAccount(input: CreateAffiliateInput): Promi
       subheadline: null,
       buttonText: null,
       permissions: defaultLandingPagePermissions,
+      sections: defaultSectionsConfig,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });

@@ -27,7 +27,10 @@ function ensureFbqScriptLoaded() {
 const initializedPixelIds = new Set<string>();
 
 export function useMetaPixel(pixelId: string | null | undefined) {
-  const hasFiredPageView = useRef(false);
+  // Keyed by pixelId (not a single boolean) so that a client-side route change
+  // to a different affiliate's page — same component instance, new pixelId —
+  // still fires its own PageView instead of being skipped as already-fired.
+  const firedPageViewFor = useRef(new Set<string>());
 
   useEffect(() => {
     if (!pixelId) return;
@@ -39,8 +42,8 @@ export function useMetaPixel(pixelId: string | null | undefined) {
       window.fbq?.('init', pixelId);
     }
 
-    if (!hasFiredPageView.current) {
-      hasFiredPageView.current = true;
+    if (!firedPageViewFor.current.has(pixelId)) {
+      firedPageViewFor.current.add(pixelId);
       window.fbq?.('track', 'PageView');
     }
   }, [pixelId]);

@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { LandingHero } from '../components/LandingHero';
 import { AffiliateProfile } from '../components/AffiliateProfile';
 import { HandlesMarquee } from '../components/HandlesMarquee';
@@ -9,7 +9,16 @@ import { BenefitsSection } from '../components/BenefitsSection';
 import { BrandsCarousel } from '../components/BrandsCarousel';
 import { LandingFooter } from '../components/LandingFooter';
 import { JoinPopupToast } from '../components/JoinPopupToast';
+import { ImageCarousel } from '../components/ImageCarousel';
+import { CtaButton } from '../components/CtaButton';
+import { PromoModal } from '../components/PromoModal';
 import { defaultLandingTheme, type LandingTheme } from '../themes/landingThemes';
+import {
+  resolveSectionsConfig,
+  OVERLAY_SECTION_TYPES,
+  type SectionsConfig,
+  type SectionType,
+} from '../../../types/landingPage';
 import '../styles/juliaLandingTemplate.css';
 
 interface JuliaLandingTemplateProps {
@@ -20,6 +29,7 @@ interface JuliaLandingTemplateProps {
   subheadline?: string;
   buttonText?: string;
   theme?: LandingTheme;
+  sections?: SectionsConfig;
 }
 
 export function JuliaLandingTemplate({
@@ -30,6 +40,7 @@ export function JuliaLandingTemplate({
   subheadline,
   buttonText,
   theme = defaultLandingTheme,
+  sections,
 }: JuliaLandingTemplateProps) {
   const themeVars = {
     '--landing-primary': theme.primary,
@@ -44,33 +55,64 @@ export function JuliaLandingTemplate({
     '--landing-border': theme.border,
   } as CSSProperties;
 
+  const resolved = resolveSectionsConfig(sections);
+  const active = resolved.order.filter((type) => resolved.enabled[type] !== false);
+  const flowSections = active.filter((type) => !OVERLAY_SECTION_TYPES.includes(type));
+
+  const renderSection = (type: SectionType): ReactNode => {
+    switch (type) {
+      case 'hero':
+        return <LandingHero headline={headline} />;
+      case 'profile':
+        return <AffiliateProfile name={affiliateName} photoUrl={profileImageUrl} />;
+      case 'handles':
+        return <HandlesMarquee />;
+      case 'offer':
+        return <OfferSection subheadline={subheadline} />;
+      case 'whatsappButton':
+        return <WhatsAppButton url={whatsappUrl} buttonText={buttonText} />;
+      case 'marketplaceLogos':
+        return <MarketplaceLogos />;
+      case 'benefits':
+        return <BenefitsSection />;
+      case 'brandsCarousel':
+        return <BrandsCarousel />;
+      case 'footer':
+        return <LandingFooter />;
+      case 'imageCarousel':
+        return <ImageCarousel images={resolved.imageCarousel?.images ?? []} />;
+      case 'ctaButton':
+        return resolved.ctaButton ? (
+          <CtaButton
+            label={resolved.ctaButton.label}
+            url={resolved.ctaButton.url}
+            eventName={resolved.ctaButton.pixelEventName}
+          />
+        ) : null;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="julia-landing-template" style={themeVars}>
-      <section className="julia-section julia-section--hero">
-        <div className="julia-card--hero">
-          <LandingHero headline={headline} />
-          <AffiliateProfile name={affiliateName} photoUrl={profileImageUrl} />
-          <HandlesMarquee />
-        </div>
-      </section>
+      {flowSections.map((type) => (
+        <section key={type} className="julia-section">
+          <div className="julia-section-card">{renderSection(type)}</div>
+        </section>
+      ))}
 
-      <section className="julia-section julia-section--offer">
-        <div className="julia-section-inner">
-          <div className="julia-card--offer">
-            <OfferSection subheadline={subheadline} />
-            <WhatsAppButton url={whatsappUrl} buttonText={buttonText} />
-            <MarketplaceLogos />
-            <BenefitsSection />
-            <BrandsCarousel />
-          </div>
-        </div>
-      </section>
-
-      <section className="julia-section julia-section--footer">
-        <LandingFooter />
-      </section>
-
-      <JoinPopupToast />
+      {active.includes('joinPopupToast') && <JoinPopupToast />}
+      {active.includes('promoModal') && resolved.promoModal && (
+        <PromoModal
+          title={resolved.promoModal.title}
+          body={resolved.promoModal.body}
+          imageUrl={resolved.promoModal.imageUrl}
+          ctaLabel={resolved.promoModal.ctaLabel}
+          ctaUrl={resolved.promoModal.ctaUrl}
+          delaySeconds={resolved.promoModal.delaySeconds}
+        />
+      )}
     </div>
   );
 }

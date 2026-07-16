@@ -10,26 +10,29 @@
   box-sizing: border-box;
 }
 
-/* ---------- Section 1: hero card ---------- */
+/* ---------- Shared section wrapper (every block gets this) ---------- */
 
-.julia-section--hero {
+.julia-section {
   background-color: var(--landing-background);
   padding: 24px 16px;
   width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
-.julia-card--hero {
+.julia-section-card {
   width: 100%;
   background-color: var(--landing-surface);
   border: 4px solid var(--landing-border);
   border-radius: 16px;
-  padding: 21px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  order: 0;
+  gap: 16px;
 }
+
+/* ---------- Hero / headline ---------- */
 
 .julia-hero-headline {
   text-align: center;
@@ -39,15 +42,15 @@
   line-height: 43px;
   color: var(--landing-primary);
   margin: 0;
-  order: 1;
 }
+
+/* ---------- Profile ---------- */
 
 .julia-profile {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  order: 2;
 }
 
 .julia-profile-photo {
@@ -68,6 +71,8 @@
   margin: 0;
 }
 
+/* ---------- Handles marquee ---------- */
+
 .julia-marquee {
   width: 100%;
   overflow: hidden;
@@ -77,7 +82,6 @@
   height: 25px;
   display: flex;
   align-items: center;
-  order: 3;
 }
 
 .julia-marquee-track {
@@ -104,30 +108,7 @@
   }
 }
 
-/* ---------- Section 2: offer card ---------- */
-
-.julia-section--offer {
-  background-color: var(--landing-background);
-  padding: 24px 16px;
-  display: flex;
-  justify-content: center;
-}
-
-.julia-section-inner {
-  width: 100%;
-}
-
-.julia-card--offer {
-  width: 100%;
-  background-color: var(--landing-surface);
-  border: 4px solid var(--landing-border);
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
+/* ---------- Offer / subheadline ---------- */
 
 .julia-offer-subheadline {
   text-align: center;
@@ -264,7 +245,7 @@
   color: var(--landing-muted-text);
 }
 
-/* ---------- Brands carousel ---------- */
+/* ---------- Brands carousel (legacy, hardcoded) ---------- */
 
 .julia-brands-carousel {
   width: 100%;
@@ -305,15 +286,65 @@
   }
 }
 
-/* ---------- Section 3: footer ---------- */
+/* ---------- Image carousel (new, configurable) ---------- */
 
-.julia-section--footer {
-  padding: 20px 16px 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+.julia-image-carousel {
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+  padding: 4px 0;
+  position: relative;
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
 }
+
+.julia-image-carousel-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: julia-brands-scroll 10s linear infinite;
+}
+
+.julia-image-carousel-track img {
+  height: 80px;
+  width: auto;
+  max-width: none;
+  margin: 0 30px;
+  opacity: 0.7;
+  transition: all 0.4s ease;
+}
+
+.julia-image-carousel-track img.active {
+  transform: scale(1.3);
+  opacity: 1;
+}
+
+/* ---------- CTA button (new, configurable) ---------- */
+
+.julia-cta-button-container {
+  text-align: center;
+  margin-top: 2px;
+}
+
+.julia-cta-button {
+  background-color: var(--landing-button-background);
+  color: var(--landing-button-text) !important;
+  font-size: 20px;
+  font-family: Arial, sans-serif;
+  padding: 20px 40px;
+  border-radius: 50px;
+  text-decoration: none !important;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.julia-cta-button:hover {
+  transform: scale(1.05);
+}
+
+/* ---------- Footer ---------- */
 
 .julia-footer-text {
   text-align: center;
@@ -359,10 +390,77 @@
   }
 }
 
+/* ---------- Promo modal (new, configurable) ---------- */
+
+.julia-promo-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9998;
+}
+
+.julia-promo-modal {
+  position: relative;
+  background: var(--landing-surface);
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.julia-promo-modal h3 {
+  margin: 0;
+  color: var(--landing-primary);
+  font-family: 'Poppins', sans-serif;
+}
+
+.julia-promo-modal p {
+  margin: 0;
+  color: var(--landing-text);
+}
+
+.julia-promo-modal-image {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  max-height: 180px;
+}
+
+.julia-promo-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--landing-muted-text);
+}
+
+.julia-promo-modal-cta {
+  background-color: var(--landing-button-background);
+  color: var(--landing-button-text) !important;
+  padding: 12px 24px;
+  border-radius: 50px;
+  text-decoration: none !important;
+  font-weight: 700;
+  display: inline-block;
+}
+
 /* ---------- Mobile (matches original @media max-width:767px) ---------- */
 
 @media (max-width: 767px) {
-  .julia-card--hero {
+  .julia-section-card {
     border-width: 4px;
     padding: 10px;
     gap: 14px;
@@ -371,11 +469,6 @@
   .julia-hero-headline {
     font-size: 19px;
     line-height: 1.3em;
-    order: 1;
-  }
-
-  .julia-profile {
-    order: 2;
   }
 
   .julia-profile-photo {
@@ -387,16 +480,6 @@
 
   .julia-profile-greeting {
     font-size: 17px;
-  }
-
-  .julia-marquee {
-    order: 0;
-  }
-
-  .julia-card--offer {
-    border-width: 4px;
-    border-radius: 16px;
-    padding: 16px;
   }
 
   .julia-offer-subheadline {
@@ -422,7 +505,8 @@
     height: 60px;
   }
 
-  .julia-brands-track img {
+  .julia-brands-track img,
+  .julia-image-carousel-track img {
     height: 80px;
     margin: 0 30px;
   }
@@ -434,7 +518,8 @@
 }
 
 @media (max-width: 400px) {
-  .julia-whatsapp-button {
+  .julia-whatsapp-button,
+  .julia-cta-button {
     font-size: 17px;
     padding: 16px 28px;
     gap: 10px;
@@ -444,18 +529,10 @@
 /* ---------- Desktop/tablet (matches original @media min-width:768px) ---------- */
 
 @media (min-width: 768px) {
-  .julia-section--offer {
+  .julia-section {
+    max-width: 720px;
+    margin: 0 auto;
     padding-left: 0;
     padding-right: 0;
-  }
-
-  .julia-section--hero {
-    width: 97.244%;
-    margin: 0 auto;
-  }
-
-  .julia-section-inner {
-    width: 80%;
-    margin: 0 auto;
   }
 }

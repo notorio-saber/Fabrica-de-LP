@@ -261,6 +261,7 @@ export function AffiliateEditPage() {
             subheadline={draft.subheadline || undefined}
             buttonText={draft.buttonText || undefined}
             theme={theme}
+            sections={state.data.sections}
           />
         </div>
       </div>

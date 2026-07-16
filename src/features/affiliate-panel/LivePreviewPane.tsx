@@ -1,5 +1,6 @@
 import { JuliaLandingTemplate } from '../landing-page/templates/JuliaLandingTemplate';
 import type { LandingTheme } from '../landing-page/themes/landingThemes';
+import type { SectionsConfig } from '../../types/landingPage';
 
 interface LivePreviewPaneProps {
   affiliateName: string;
@@ -9,6 +10,7 @@ interface LivePreviewPaneProps {
   subheadline?: string;
   buttonText?: string;
   theme: LandingTheme;
+  sections?: SectionsConfig;
 }
 
 export function LivePreviewPane(props: LivePreviewPaneProps) {

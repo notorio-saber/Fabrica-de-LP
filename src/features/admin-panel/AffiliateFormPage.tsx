@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useLandingPageDoc } from '../../hooks/useLandingPageDoc';
 import { landingThemes, defaultLandingTheme } from '../landing-page/themes/landingThemes';
-import { defaultLandingPagePermissions, type LandingPagePermissions } from '../../types/landingPage';
+import {
+  defaultLandingPagePermissions,
+  defaultSectionsConfig,
+  resolveSectionsConfig,
+  type LandingPagePermissions,
+  type SectionsConfig,
+} from '../../types/landingPage';
 import { createAffiliateAccount } from './services/createAffiliateAccount';
+import { renameAffiliateSlug } from './services/renameAffiliateSlug';
 import { uploadProfilePhoto } from '../affiliate-panel/uploadProfilePhoto';
 import { LivePreviewPane } from '../affiliate-panel/LivePreviewPane';
+import { SectionsEditor } from './SectionsEditor';
 import { brand, ui } from '../../styles/adminUi';
 
 const PERMISSION_LABELS: Record<keyof LandingPagePermissions, string> = {
@@ -164,17 +172,25 @@ function CreatedAffiliateSummary({ affiliate }: { affiliate: CreatedAffiliate })
 }
 
 function EditForm({ slug }: { slug: string }) {
+  const navigate = useNavigate();
   const state = useLandingPageDoc(slug);
   const [affiliateName, setAffiliateName] = useState('');
   const [whatsappUrl, setWhatsappUrl] = useState('');
   const [pixelId, setPixelId] = useState('');
   const [themeId, setThemeId] = useState('');
   const [status, setStatus] = useState<'active' | 'inactive'>('active');
+  const [headline, setHeadline] = useState('');
+  const [subheadline, setSubheadline] = useState('');
+  const [buttonText, setButtonText] = useState('');
   const [permissions, setPermissions] = useState<LandingPagePermissions>(defaultLandingPagePermissions);
+  const [sections, setSections] = useState<SectionsConfig>(defaultSectionsConfig);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [newSlug, setNewSlug] = useState('');
+  const [renaming, setRenaming] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
 
   useEffect(() => {
     if (state.status === 'ready' && !loaded) {
@@ -183,7 +199,11 @@ function EditForm({ slug }: { slug: string }) {
       setPixelId(state.data.pixelId ?? '');
       setThemeId(state.data.themeId);
       setStatus(state.data.status);
+      setHeadline(state.data.headline ?? '');
+      setSubheadline(state.data.subheadline ?? '');
+      setButtonText(state.data.buttonText ?? '');
       setPermissions(state.data.permissions);
+      setSections(resolveSectionsConfig(state.data.sections));
       setLoaded(true);
     }
   }, [state, loaded]);
@@ -216,11 +236,35 @@ function EditForm({ slug }: { slug: string }) {
         pixelId: pixelId || null,
         themeId,
         status,
+        headline: headline || null,
+        subheadline: subheadline || null,
+        buttonText: buttonText || null,
         permissions,
+        sections,
         updatedAt: new Date(),
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRename = async () => {
+    const target = newSlug.trim().toLowerCase();
+    if (!target) return;
+    const confirmed = window.confirm(
+      `Trocar o slug de "${slug}" pra "${target}"? O link antigo (/p/${slug}) deixa de funcionar assim que a troca for feita.`
+    );
+    if (!confirmed) return;
+
+    setRenameError(null);
+    setRenaming(true);
+    try {
+      await renameAffiliateSlug(slug, target);
+      navigate(`/admin/afiliadas/${target}`, { replace: true });
+    } catch (err) {
+      setRenameError(err instanceof Error ? err.message : 'Erro ao trocar o slug.');
+    } finally {
+      setRenaming(false);
     }
   };
 
@@ -229,6 +273,31 @@ function EditForm({ slug }: { slug: string }) {
       <BackLink />
       <h1 style={ui.pageTitle}>Editar {slug}</h1>
       <p style={ui.pageSubtitle}>Ajuste os dados da página e escolha o que essa afiliada pode alterar por conta própria.</p>
+
+      <div style={{ ...ui.card, padding: 20, marginTop: 20, maxWidth: 420, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <label style={ui.label}>
+          Trocar slug (atual: {slug})
+          <input
+            style={ui.input}
+            placeholder="novo-slug"
+            value={newSlug}
+            onChange={(e) => setNewSlug(e.target.value.trim().toLowerCase())}
+          />
+        </label>
+        <p style={{ margin: 0, fontSize: 12, color: brand.mutedText }}>
+          O link público muda de /p/{slug} pra /p/{newSlug || '...'}. Links já compartilhados com o slug antigo param de
+          funcionar.
+        </p>
+        {renameError && <p style={ui.error}>{renameError}</p>}
+        <button
+          type="button"
+          disabled={renaming || !newSlug.trim()}
+          onClick={handleRename}
+          style={{ ...ui.buttonSecondary, alignSelf: 'flex-start' }}
+        >
+          {renaming ? 'Trocando...' : 'Trocar slug'}
+        </button>
+      </div>
 
       <div style={{ display: 'flex', gap: 32, marginTop: 20, alignItems: 'flex-start' }}>
         <form
@@ -280,6 +349,39 @@ function EditForm({ slug }: { slug: string }) {
           </div>
 
           <fieldset style={{ border: `1px solid ${brand.border}`, borderRadius: 12, padding: 14 }}>
+            <legend style={{ fontSize: 13, color: brand.mutedText, padding: '0 6px' }}>Textos da página</legend>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <label style={ui.label}>
+                Título principal
+                <textarea
+                  style={{ ...ui.input, resize: 'vertical', minHeight: 60, fontFamily: 'inherit' }}
+                  value={headline}
+                  placeholder="CURADORIA EXCLUSIVA DOS PRODUTOS DE BELEZA MAIS DESEJADOS DO MOMENTO"
+                  onChange={(e) => setHeadline(e.target.value)}
+                />
+              </label>
+              <label style={ui.label}>
+                Subtítulo
+                <textarea
+                  style={{ ...ui.input, resize: 'vertical', minHeight: 60, fontFamily: 'inherit' }}
+                  value={subheadline}
+                  placeholder="Uma seleção diária com marcas confiáveis..."
+                  onChange={(e) => setSubheadline(e.target.value)}
+                />
+              </label>
+              <label style={ui.label}>
+                Texto do botão
+                <input
+                  style={ui.input}
+                  value={buttonText}
+                  placeholder="ENTRAR NO GRUPO 🤍"
+                  onChange={(e) => setButtonText(e.target.value)}
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset style={{ border: `1px solid ${brand.border}`, borderRadius: 12, padding: 14 }}>
             <legend style={{ fontSize: 13, color: brand.mutedText, padding: '0 6px' }}>O que a afiliada pode editar</legend>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
               {(Object.keys(PERMISSION_LABELS) as Array<keyof LandingPagePermissions>).map((key) => (
@@ -295,6 +397,11 @@ function EditForm({ slug }: { slug: string }) {
             </div>
           </fieldset>
 
+          <fieldset style={{ border: `1px solid ${brand.border}`, borderRadius: 12, padding: 14 }}>
+            <legend style={{ fontSize: 13, color: brand.mutedText, padding: '0 6px' }}>Blocos da página</legend>
+            <SectionsEditor value={sections} onChange={setSections} />
+          </fieldset>
+
           <button type="submit" disabled={saving} style={{ ...ui.buttonPrimary, alignSelf: 'flex-start' }}>
             {saving ? 'Salvando...' : 'Salvar'}
           </button>
@@ -305,10 +412,11 @@ function EditForm({ slug }: { slug: string }) {
             affiliateName={affiliateName}
             profileImageUrl={state.data.profileImageUrl ?? undefined}
             whatsappUrl={whatsappUrl}
-            headline={state.data.headline ?? undefined}
-            subheadline={state.data.subheadline ?? undefined}
-            buttonText={state.data.buttonText ?? undefined}
+            headline={headline || undefined}
+            subheadline={subheadline || undefined}
+            buttonText={buttonText || undefined}
             theme={previewTheme}
+            sections={sections}
           />
         </div>
       </div>
