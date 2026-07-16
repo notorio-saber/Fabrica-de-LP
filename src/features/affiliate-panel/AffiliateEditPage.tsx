@@ -95,8 +95,20 @@ export function AffiliateEditPage() {
 
   return (
     <div style={{ ...ui.content, maxWidth: 'none', padding: '32px 40px' }}>
-      <h1 style={ui.pageTitle}>Editar minha página</h1>
-      <p style={ui.pageSubtitle}>As alterações aparecem na pré-visualização ao lado assim que você salva.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+        <div>
+          <h1 style={ui.pageTitle}>Editar minha página</h1>
+          <p style={ui.pageSubtitle}>As alterações aparecem na pré-visualização ao lado assim que você salva.</p>
+        </div>
+        <a
+          href={`/p/${slug}`}
+          target="_blank"
+          rel="noreferrer"
+          style={{ ...ui.buttonSecondary, textDecoration: 'none', whiteSpace: 'nowrap' }}
+        >
+          Ver minha página ↗
+        </a>
+      </div>
 
       <div style={{ display: 'flex', gap: 32, marginTop: 20, alignItems: 'flex-start' }}>
         <form
