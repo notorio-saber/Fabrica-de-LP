@@ -1,6 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase/config';
 import { BrandMark } from '../components/BrandMark';
 import { brand, ui } from '../styles/adminUi';
@@ -19,33 +18,32 @@ export function LoginForm({ title, subtitle, redirectTo, footer }: LoginFormProp
   const [error, setError] = useState<string | null>(null);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const navigate = useNavigate();
+  const [stuck, setStuck] = useState(false);
   const { user, loading } = useAuth();
 
   // Sign-in kicks off Firebase's auth state change, but AuthProvider only
   // finishes resolving the role a moment later (it needs a Firestore read).
-  // Navigating right after signIn's promise resolves races ahead of that and
-  // RequireAdmin/RequireAffiliate see a stale, signed-out state and bounce
-  // straight back here. Waiting for useAuth() itself to settle removes the
-  // race regardless of how long that read takes.
+  // A plain client-side navigate() right after signIn's promise resolves
+  // races ahead of that and RequireAdmin/RequireAffiliate see a stale,
+  // signed-out state and bounce straight back here. A full page navigation
+  // fired only once useAuth() itself has actually settled sidesteps the
+  // whole class of SPA-state timing bugs — the destination route boots
+  // fresh with a session that's already persisted.
   useEffect(() => {
     if (!loading && user) {
-      navigate(redirectTo, { replace: true });
+      window.location.assign(redirectTo);
     }
-  }, [user, loading, redirectTo, navigate]);
+  }, [user, loading, redirectTo]);
 
   // If sign-in succeeds but the role lookup never comes back (a browser
-  // extension blocking requests to firestore.googleapis.com is the usual
-  // cause), the effect above never fires and the button would otherwise
-  // spin forever with no explanation.
+  // extension or security software blocking requests to
+  // firestore.googleapis.com is the usual cause), the effect above never
+  // fires and the button would otherwise spin forever with no explanation
+  // or way out.
   useEffect(() => {
     if (!submitting) return;
-    const timeout = setTimeout(() => {
-      setError(
-        'Isso está demorando mais que o normal. Uma extensão do navegador (bloqueador de anúncios/rastreadores) pode estar bloqueando a conexão com o Firestore — tente numa aba anônima ou desative a extensão pra este site.'
-      );
-      setSubmitting(false);
-    }, 8000);
+    setStuck(false);
+    const timeout = setTimeout(() => setStuck(true), 8000);
     return () => clearTimeout(timeout);
   }, [submitting]);
 
@@ -108,6 +106,20 @@ export function LoginForm({ title, subtitle, redirectTo, footer }: LoginFormProp
         />
         {error && <p style={ui.error}>{error}</p>}
         {resetMessage && <p style={ui.success}>{resetMessage}</p>}
+        {stuck && (
+          <div style={{ ...ui.card, padding: 12, background: '#FDF3EC' }}>
+            <p style={{ ...ui.error, marginBottom: 8 }}>
+              Isso está demorando demais. Pode ser uma extensão do navegador ou um antivírus bloqueando a conexão.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              style={{ ...ui.buttonSecondary, width: '100%' }}
+            >
+              Recarregar página
+            </button>
+          </div>
+        )}
         <button style={ui.buttonPrimary} type="submit" disabled={submitting}>
           {submitting ? 'Entrando...' : 'Entrar'}
         </button>
